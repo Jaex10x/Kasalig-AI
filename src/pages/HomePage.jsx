@@ -1,3 +1,4 @@
+import supabase from '../config/supabaseClient';
 import Navbar from '../components/Navbar/Navbar';
 import Hero from '../components/Hero/Hero';
 import StatsBar from '../components/StatsBar/StatsBar';

@@ -1,16 +1,60 @@
-# React + Vite
+# Kasalig AI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Kasalig AI** is an AI-powered customer support assistant designed to help people navigate and fulfill their government service requirements with ease.
 
-Currently, two official plugins are available:
+## 🌟 About the Project
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Accessing government services can often be confusing, time-consuming, and overwhelming — especially for citizens unfamiliar with bureaucratic processes. **Kasalig AI** bridges that gap by providing an intelligent, conversational assistant that guides users through their needs, whether it's understanding requirements, finding the right office, or completing necessary steps for government transactions.
 
-## React Compiler
+### Key Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+ **AI-Powered Assistance** — Instant, intelligent responses to citizen inquiries about government services and requirements.
+ **Requirements Guidance** — Step-by-step guidance on what documents and forms are needed for specific government transactions.
+ **Service Navigation** — Helps users identify the correct government offices and procedures for their needs.
+ **Conversational Interface** — Natural, user-friendly chat experience that simplifies complex government processes.
+  **Fast & Accessible** — Built for speed and accessibility so that anyone can get the help they need, anytime.
 
-## Expanding the ESLint configuration
+## 🚀 Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend**: React 19 + Vite
+- **Routing**: React Router DOM
+- **Icons**: Lucide React
+- **Styling**: Vanilla CSS
+
+## 🛠️ Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- npm or yarn
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Jaex10x/Kasalig-AI.git
+
+# Navigate to the project directory
+cd Kasalig-AI
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`.
+
+
+## 🤝 Contributing
+
+Contributions are welcome! If you'd like to help improve Kasalig AI, feel free to open an issue or submit a pull request.
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+*Built with my teammates to make government services accessible to everyone.*

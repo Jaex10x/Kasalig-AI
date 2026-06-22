@@ -1,0 +1,245 @@
+import { useState, useRef, useEffect } from 'react';
+import { Send, Home, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { askGemini } from '../Services/gemini';
+
+const ChatPage = () => {
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      type: 'bot',
+      text: `Magandang araw! I'm you friend **Kasalig AI**, your Government Services AI Assistant. I'm here to help you navigate government transactions quickly and easily.\n\nWhat can I help you with today?`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    },
+  ]);
+  const [inputValue, setInputValue] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const quickActions = [
+    'National ID Application',
+    'Document Requests',
+    'Business Registration',
+    'What services are available?',
+  ];
+
+  const suggestedQuestions = [
+    'What services are available?',
+    'How long does processing take?',
+    'What payment methods are accepted?',
+    'Can I track my application?',
+  ];
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping]);
+
+  const formatMessageText = (text) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i}>{part.slice(2, -2)}</strong>;
+      }
+      
+      const lines = part.split('\n');
+      return lines.map((line, j) => (
+        <span key={`${i}-${j}`}>
+          {j > 0 && <br />}
+          {line}
+        </span>
+      ));
+    });
+  };
+
+  const handleSendMessage = async (text) => {
+    const messageText = text || inputValue.trim();
+    if (!messageText || isTyping) return;
+
+    const userMessage = {
+      id: messages.length + 1,
+      type: 'user',
+      text: messageText,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue('');
+    setIsTyping(true);
+
+    try {
+      const aiReply = await askGemini(messageText);
+
+      const botResponse = {
+        id: messages.length + 2,
+        type: 'bot',
+        text: aiReply,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages((prev) => [...prev, botResponse]);
+    } catch (error) {
+      const errorResponse = {
+        id: messages.length + 2,
+        type: 'bot',
+        text: "I'm sorry, something went wrong. Please try again.",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages((prev) => [...prev, errorResponse]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  return (
+    <div className="chat-page" id="chat-page">
+      {/* Chat Header */}
+      <header className="chat-header" id="chat-header">
+        <div className="chat-header__left">
+          <button
+            className="chat-header__back"
+            id="chat-back-btn"
+            onClick={() => navigate('/')}
+            aria-label="Go back to home"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div className="chat-header__avatar" id="chat-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span className="chat-header__status-dot"></span>
+          </div>
+          <div className="chat-header__info">
+            <div className="chat-header__title">
+              Kasalig AI Assistant
+              <span className="chat-header__online-badge">● Online</span>
+            </div>
+            <div className="chat-header__subtitle">Ask me anything about government services</div>
+          </div>
+        </div>
+        <button
+          className="chat-header__home-btn"
+          id="chat-home-btn"
+          onClick={() => navigate('/')}
+          aria-label="Go to home page"
+        >
+          <Home size={18} />
+        </button>
+      </header>
+
+      {/* Chat Messages Area */}
+      <main className="chat-messages" id="chat-messages">
+        {messages.map((message) => (
+          <div key={message.id} className={`chat-bubble-wrapper chat-bubble-wrapper--${message.type}`}>
+            {message.type === 'bot' && (
+              <div className="chat-bubble__bot-avatar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              </div>
+            )}
+            <div className={`chat-bubble chat-bubble--${message.type}`}>
+              <p className="chat-bubble__text">{formatMessageText(message.text)}</p>
+            </div>
+          </div>
+        ))}
+
+        {/* Timestamp after first bot message */}
+        {messages.length >= 1 && (
+          <div className="chat-timestamp">{messages[0].time}</div>
+        )}
+
+        {/* Quick action chips - show only when there's just the welcome message */}
+        {messages.length === 1 && (
+          <div className="chat-quick-actions" id="chat-quick-actions">
+            {quickActions.map((action) => (
+              <button
+                key={action}
+                className="chat-quick-action"
+                onClick={() => handleSendMessage(action)}
+              >
+                {action}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Bot typing indicator */}
+        {isTyping && (
+          <div className="chat-bubble-wrapper chat-bubble-wrapper--bot">
+            <div className="chat-bubble__bot-avatar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div className="chat-bubble chat-bubble--bot chat-typing-indicator">
+              <span className="typing-dot"></span>
+              <span className="typing-dot"></span>
+              <span className="typing-dot"></span>
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </main>
+
+      {/* Suggested Questions */}
+      <div className="chat-suggestions" id="chat-suggestions">
+        {suggestedQuestions.map((question) => (
+          <button
+            key={question}
+            className="chat-suggestion-chip"
+            onClick={() => handleSendMessage(question)}
+          >
+            <span className="chat-suggestion-chip__icon">◎</span>
+            {question}
+          </button>
+        ))}
+      </div>
+
+      {/* Input Area */}
+      <footer className="chat-input-area" id="chat-input-area">
+        <div className="chat-input-wrapper">
+          <input
+            ref={inputRef}
+            type="text"
+            className="chat-input"
+            id="chat-input"
+            placeholder="Type your question or select a service..."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isTyping}
+          />
+          <button
+            className={`chat-send-btn ${inputValue.trim() ? 'chat-send-btn--active' : ''}`}
+            id="chat-send-btn"
+            onClick={() => handleSendMessage()}
+            disabled={!inputValue.trim() || isTyping}
+            aria-label="Send message"
+          >
+            <Send size={18} />
+          </button>
+        </div>
+        <p className="chat-disclaimer">Kasalig AI is a guide only. Always verify with the official government agency.</p>
+      </footer>
+    </div>
+  );
+};
+
+export default ChatPage;

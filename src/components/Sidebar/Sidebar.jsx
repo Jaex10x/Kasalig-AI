@@ -1,4 +1,5 @@
 import { ArrowRight, Search, Bell, MessageCircle, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const applicationsData = [
   {
@@ -58,9 +59,9 @@ const Sidebar = () => {
       <div className="applications-widget" id="applications-widget">
         <div className="widget-header">
           <h3 className="widget-header__title">My Applications</h3>
-          <button className="widget-header__action" id="view-all-applications">
+          <Link to="/track" className="widget-header__action" id="view-all-applications">
             View All <ArrowRight size={12} />
-          </button>
+          </Link>
         </div>
 
         {applicationsData.map((app) => (
@@ -78,10 +79,10 @@ const Sidebar = () => {
           </div>
         ))}
 
-        <button className="track-all-btn" id="track-all-btn">
+        <Link to="/track" className="track-all-btn" id="track-all-btn">
           <Eye size={14} />
           Track all applications
-        </button>
+        </Link>
       </div>
 
       {/* Announcements Widget */}
@@ -122,9 +123,9 @@ const Sidebar = () => {
           Have questions? I'm available 24/7 to guide you through
           any government service, step by step.
         </p>
-        <button className="ask-kasalig__btn" id="start-conversation-btn">
+        <Link to="/chat" className="ask-kasalig__btn" id="start-conversation-btn">
           Start a Conversation
-        </button>
+        </Link>
       </div>
     </aside>
   );

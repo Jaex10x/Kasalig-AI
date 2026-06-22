@@ -1,4 +1,5 @@
 import { MessageCircle, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
@@ -15,19 +16,19 @@ const Hero = () => {
       </h1>
 
       <p className="hero__description">
-        Kasalig guides every Filipino through government transactions — IDs, documents,
+        Kasalig AI guides every Filipino through government transactions — IDs, documents,
         business registration — all in one intelligent platform.
       </p>
 
       <div className="hero__actions">
-        <button className="btn btn--primary" id="chat-kasalig-btn">
+        <Link to="/chat" className="btn btn--primary" id="chat-kasalig-btn">
           <MessageCircle size={16} className="btn__icon" />
           Chat with Kasalig
-        </button>
-        <button className="btn btn--secondary" id="track-applications-btn">
+        </Link>
+        <Link to="/track" className="btn btn--secondary" id="track-applications-btn">
           Track My Applications
           <ArrowRight size={16} className="btn__icon" />
-        </button>
+        </Link>
       </div>
     </section>
   );
