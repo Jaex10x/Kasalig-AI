@@ -81,7 +81,7 @@ const Navbar = () => {
     <nav className="navbar" id="main-navbar">
       <div className="navbar__brand">
         <Link to="/" className="navbar__logo">
-          <img src="/logo.png" alt="Kasalig AI" width={22} />
+          <img src="/logo.png" alt="Kasalig AI" width={40} />
         </Link>
         <div className="navbar__brand-info">
           <Link to="/" className="navbar__brand-name">
