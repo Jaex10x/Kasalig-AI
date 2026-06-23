@@ -17,7 +17,7 @@ import { useAuth } from '../context/AuthContext';
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, updateUser } = useAuth();
+  const { user, isAuthenticated, loading, updateUser, updatePassword } = useAuth();
 
   // Active Tab: 'profile', 'security', 'verification'
   const [activeTab, setActiveTab] = useState('profile');
@@ -49,21 +49,23 @@ const Settings = () => {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    } else if (user) {
-      setProfileData({
-        name: user.name || '',
-        email: user.email || '',
-        contactNumber: user.contactNumber || '',
-        address: user.address || '',
-      });
-      setVerificationData({
-        govIdType: user.govIdType || 'None',
-        govIdNumber: user.govIdNumber || '',
-      });
+    if (!loading) {
+      if (!isAuthenticated) {
+        navigate('/login');
+      } else if (user) {
+        setProfileData({
+          name: user.name || '',
+          email: user.email || '',
+          contactNumber: user.contactNumber || '',
+          address: user.address || '',
+        });
+        setVerificationData({
+          govIdType: user.govIdType || 'None',
+          govIdNumber: user.govIdNumber || '',
+        });
+      }
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, loading, user, navigate]);
 
   const showAlert = (message, type = 'success') => {
     setAlert({ show: true, message, type });
@@ -72,11 +74,11 @@ const Settings = () => {
     }, 4000);
   };
 
-  const handleProfileSubmit = (e) => {
+  const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      updateUser({
+    try {
+      await updateUser({
         name: profileData.name,
         email: profileData.email,
         contactNumber: profileData.contactNumber,
@@ -84,10 +86,13 @@ const Settings = () => {
       });
       setIsLoading(false);
       showAlert('Profile information updated successfully!');
-    }, 1000);
+    } catch (err) {
+      setIsLoading(false);
+      showAlert(err.message || 'Failed to update profile details', 'error');
+    }
   };
 
-  const handleSecuritySubmit = (e) => {
+  const handleSecuritySubmit = async (e) => {
     e.preventDefault();
     if (securityData.newPassword !== securityData.confirmPassword) {
       showAlert('New passwords do not match!', 'error');
@@ -98,26 +103,40 @@ const Settings = () => {
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      // In a real app we'd make an API request to verify current password & update
+    try {
+      await updatePassword(securityData.newPassword);
       setIsLoading(false);
       setSecurityData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       showAlert('Password updated successfully!');
-    }, 1200);
+    } catch (err) {
+      setIsLoading(false);
+      showAlert(err.message || 'Failed to update password', 'error');
+    }
   };
 
-  const handleVerificationSubmit = (e) => {
+  const handleVerificationSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      updateUser({
+    try {
+      await updateUser({
         govIdType: verificationData.govIdType,
         govIdNumber: verificationData.govIdNumber,
       });
       setIsLoading(false);
       showAlert('Government identity link updated successfully!');
-    }, 1000);
+    } catch (err) {
+      setIsLoading(false);
+      showAlert(err.message || 'Failed to update credentials', 'error');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="settings-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <span className="auth-spinner" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !user) {
     return null;

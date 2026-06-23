@@ -2236,6 +2236,93 @@ overflow: hidden;
   font-style: italic;
 }
 
+/* Chat Header Actions */
+.chat-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ========================================
+   LIVE STREAMING CHAT STYLES
+   ======================================== */
+
+/* Streaming cursor - blinking caret while AI is typing */
+.chat-streaming-cursor {
+  display: inline;
+  color: #2563eb;
+  font-weight: 300;
+  animation: cursorBlink 0.8s step-end infinite;
+  margin-left: 1px;
+  font-size: 1.1em;
+  line-height: 1;
+  vertical-align: text-bottom;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Streaming message bubble - subtle left border glow */
+.chat-bubble--streaming {
+  border-left: 3px solid #3b82f6;
+  animation: streamingPulse 2s ease-in-out infinite;
+}
+
+@keyframes streamingPulse {
+  0%, 100% {
+    border-left-color: #3b82f6;
+    box-shadow: var(--shadow-sm), -2px 0 8px rgba(59, 130, 246, 0.1);
+  }
+  50% {
+    border-left-color: #60a5fa;
+    box-shadow: var(--shadow-sm), -2px 0 12px rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* Bot avatar glow while streaming */
+.chat-bubble__bot-avatar--streaming {
+  animation: avatarStreamPulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+}
+
+@keyframes avatarStreamPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
+  }
+}
+
+/* Typing dots - shown before first chunk arrives */
+.chat-typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: var(--space-1) 0;
+  min-height: 24px;
+}
+
+/* Online badge - replying state */
+.chat-header__online-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.15);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+/* Suggestion chips disabled state */
+.chat-suggestion-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ========================================
    ANIMATIONS
    ======================================== */

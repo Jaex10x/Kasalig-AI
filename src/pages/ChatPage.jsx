@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import { Send, Home, ArrowLeft } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Send, Home, ArrowLeft, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { askGemini } from '../Services/gemini';
+import { askGeminiStream, resetConversation } from '../Services/gemini';
 
 const ChatPage = () => {
   const navigate = useNavigate();
@@ -9,14 +9,16 @@ const ChatPage = () => {
     {
       id: 1,
       type: 'bot',
-      text: `Magandang araw! I'm you friend **Kasalig AI**, your Government Services AI Assistant. I'm here to help you navigate government transactions quickly and easily.\n\nWhat can I help you with today?`,
+      text: `Magandang araw! I'm your friend **Kasalig AI**, your Government Services AI Assistant. I'm here to help you navigate government transactions quickly and easily.\n\nWhat can I help you with today?`,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isComplete: true,
     },
   ]);
   const [inputValue, setInputValue] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const streamingMessageId = useRef(null);
 
   const quickActions = [
     'National ID Application',
@@ -38,9 +40,17 @@ const ChatPage = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages, isStreaming]);
+
+  // Focus input when streaming ends
+  useEffect(() => {
+    if (!isStreaming && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isStreaming]);
 
   const formatMessageText = (text) => {
+    // Split by bold markers
     const parts = text.split(/(\*\*[^*]+\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
@@ -57,41 +67,85 @@ const ChatPage = () => {
     });
   };
 
+  const handleNewChat = useCallback(() => {
+    resetConversation();
+    setMessages([
+      {
+        id: 1,
+        type: 'bot',
+        text: `Magandang araw! I'm your friend **Kasalig AI**, your Government Services AI Assistant. I'm here to help you navigate government transactions quickly and easily.\n\nWhat can I help you with today?`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isComplete: true,
+      },
+    ]);
+    setInputValue('');
+    setIsStreaming(false);
+    streamingMessageId.current = null;
+  }, []);
+
   const handleSendMessage = async (text) => {
     const messageText = text || inputValue.trim();
-    if (!messageText || isTyping) return;
+    if (!messageText || isStreaming) return;
 
     const userMessage = {
-      id: messages.length + 1,
+      id: Date.now(),
       type: 'user',
       text: messageText,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isComplete: true,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    // Create a placeholder bot message for streaming
+    const botMessageId = Date.now() + 1;
+    streamingMessageId.current = botMessageId;
+
+    const botMessage = {
+      id: botMessageId,
+      type: 'bot',
+      text: '',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isComplete: false,
+    };
+
+    setMessages((prev) => [...prev, userMessage, botMessage]);
     setInputValue('');
-    setIsTyping(true);
+    setIsStreaming(true);
 
     try {
-      const aiReply = await askGemini(messageText);
+      await askGeminiStream(messageText, (accumulatedText) => {
+        // Update the bot message with the accumulated streamed text
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === botMessageId
+              ? { ...msg, text: accumulatedText }
+              : msg
+          )
+        );
+      });
 
-      const botResponse = {
-        id: messages.length + 2,
-        type: 'bot',
-        text: aiReply,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, botResponse]);
+      // Mark the message as complete
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === botMessageId
+            ? { ...msg, isComplete: true, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+            : msg
+        )
+      );
     } catch (error) {
-      const errorResponse = {
-        id: messages.length + 2,
-        type: 'bot',
-        text: "I'm sorry, something went wrong. Please try again.",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, errorResponse]);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === botMessageId
+            ? {
+                ...msg,
+                text: "I'm sorry, something went wrong. Please try again.",
+                isComplete: true,
+              }
+            : msg
+        )
+      );
     } finally {
-      setIsTyping(false);
+      setIsStreaming(false);
+      streamingMessageId.current = null;
     }
   };
 
@@ -125,19 +179,34 @@ const ChatPage = () => {
           <div className="chat-header__info">
             <div className="chat-header__title">
               Kasalig AI Assistant
-              <span className="chat-header__online-badge">● Online</span>
+              <span className="chat-header__online-badge">
+                {isStreaming ? '✦ Replying...' : '● Online'}
+              </span>
             </div>
-            <div className="chat-header__subtitle">Ask me anything about government services</div>
+            <div className="chat-header__subtitle">
+              {isStreaming ? 'Typing a response...' : 'Ask me anything about government services'}
+            </div>
           </div>
         </div>
-        <button
-          className="chat-header__home-btn"
-          id="chat-home-btn"
-          onClick={() => navigate('/')}
-          aria-label="Go to home page"
-        >
-          <Home size={18} />
-        </button>
+        <div className="chat-header__actions">
+          <button
+            className="chat-header__home-btn"
+            id="chat-new-btn"
+            onClick={handleNewChat}
+            aria-label="Start new conversation"
+            title="New conversation"
+          >
+            <RotateCcw size={16} />
+          </button>
+          <button
+            className="chat-header__home-btn"
+            id="chat-home-btn"
+            onClick={() => navigate('/')}
+            aria-label="Go to home page"
+          >
+            <Home size={18} />
+          </button>
+        </div>
       </header>
 
       {/* Chat Messages Area */}
@@ -145,15 +214,29 @@ const ChatPage = () => {
         {messages.map((message) => (
           <div key={message.id} className={`chat-bubble-wrapper chat-bubble-wrapper--${message.type}`}>
             {message.type === 'bot' && (
-              <div className="chat-bubble__bot-avatar">
+              <div className={`chat-bubble__bot-avatar ${!message.isComplete ? 'chat-bubble__bot-avatar--streaming' : ''}`}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                   <polyline points="9 22 9 12 15 12 15 22"/>
                 </svg>
               </div>
             )}
-            <div className={`chat-bubble chat-bubble--${message.type}`}>
-              <p className="chat-bubble__text">{formatMessageText(message.text)}</p>
+            <div className={`chat-bubble chat-bubble--${message.type} ${!message.isComplete ? 'chat-bubble--streaming' : ''}`}>
+              {message.type === 'bot' && message.text === '' && !message.isComplete ? (
+                // Show typing dots while waiting for first chunk
+                <div className="chat-typing-dots">
+                  <span className="typing-dot"></span>
+                  <span className="typing-dot"></span>
+                  <span className="typing-dot"></span>
+                </div>
+              ) : (
+                <>
+                  <p className="chat-bubble__text">{formatMessageText(message.text)}</p>
+                  {!message.isComplete && (
+                    <span className="chat-streaming-cursor">▍</span>
+                  )}
+                </>
+              )}
             </div>
           </div>
         ))}
@@ -178,23 +261,6 @@ const ChatPage = () => {
           </div>
         )}
 
-        {/* Bot typing indicator */}
-        {isTyping && (
-          <div className="chat-bubble-wrapper chat-bubble-wrapper--bot">
-            <div className="chat-bubble__bot-avatar">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </div>
-            <div className="chat-bubble chat-bubble--bot chat-typing-indicator">
-              <span className="typing-dot"></span>
-              <span className="typing-dot"></span>
-              <span className="typing-dot"></span>
-            </div>
-          </div>
-        )}
-
         <div ref={messagesEndRef} />
       </main>
 
@@ -205,6 +271,7 @@ const ChatPage = () => {
             key={question}
             className="chat-suggestion-chip"
             onClick={() => handleSendMessage(question)}
+            disabled={isStreaming}
           >
             <span className="chat-suggestion-chip__icon">◎</span>
             {question}
@@ -220,17 +287,17 @@ const ChatPage = () => {
             type="text"
             className="chat-input"
             id="chat-input"
-            placeholder="Type your question or select a service..."
+            placeholder={isStreaming ? "Wait for the reply..." : "Type your question or select a service..."}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={isTyping}
+            disabled={isStreaming}
           />
           <button
             className={`chat-send-btn ${inputValue.trim() ? 'chat-send-btn--active' : ''}`}
             id="chat-send-btn"
             onClick={() => handleSendMessage()}
-            disabled={!inputValue.trim() || isTyping}
+            disabled={!inputValue.trim() || isStreaming}
             aria-label="Send message"
           >
             <Send size={18} />

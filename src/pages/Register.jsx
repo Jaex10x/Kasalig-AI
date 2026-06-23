@@ -23,7 +23,7 @@ const Register = () => {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
@@ -34,11 +34,19 @@ const Register = () => {
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      auth.register({ fullName: formData.fullName, email: formData.email });
+    setError('');
+    try {
+      await auth.register({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+      });
       setIsLoading(false);
       navigate('/');
-    }, 1500);
+    } catch (err) {
+      setError(err.message || 'An error occurred during registration');
+      setIsLoading(false);
+    }
   };
 
   return (

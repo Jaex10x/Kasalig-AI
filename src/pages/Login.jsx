@@ -10,19 +10,25 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      auth.login({ email: formData.email, name: formData.email.split('@')[0] });
+    setError('');
+    try {
+      await auth.login({ email: formData.email, password: formData.password });
       setIsLoading(false);
       navigate('/');
-    }, 1500);
+    } catch (err) {
+      setError(err.message || 'Invalid email or password');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -87,6 +93,12 @@ const Login = () => {
               Sign in to your account to continue
             </p>
           </div>
+
+          {error && (
+            <div className="auth-error" id="login-error">
+              {error}
+            </div>
+          )}
 
           <form className="auth-form" onSubmit={handleSubmit} id="login-form">
             <div className="auth-input-group">

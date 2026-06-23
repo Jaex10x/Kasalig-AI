@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../config/supabaseClient';
 
 const AuthContext = createContext(null);
 
@@ -29,70 +30,130 @@ const defaultNotifications = [
   },
 ];
 
+const getInitials = (name) => {
+  if (!name) return 'U';
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return parts[0][0].toUpperCase();
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('kasalig_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [notifications, setNotifications] = useState(() => {
     const saved = localStorage.getItem('kasalig_notifications');
     return saved ? JSON.parse(saved) : defaultNotifications;
   });
 
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('kasalig_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('kasalig_user');
-    }
-  }, [user]);
+  const mapSupabaseUser = (supabaseUser) => {
+    if (!supabaseUser) return null;
+    const name = supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0];
+    return {
+      id: supabaseUser.id,
+      name,
+      email: supabaseUser.email,
+      contactNumber: supabaseUser.user_metadata?.contact_number || '',
+      address: supabaseUser.user_metadata?.address || '',
+      govIdType: supabaseUser.user_metadata?.gov_id_type || 'None',
+      govIdNumber: supabaseUser.user_metadata?.gov_id_number || '',
+      initials: getInitials(name),
+    };
+  };
 
   useEffect(() => {
     localStorage.setItem('kasalig_notifications', JSON.stringify(notifications));
   }, [notifications]);
 
-  const login = (userData) => {
-    const fullUser = {
-      name: userData.name || userData.email.split('@')[0],
-      email: userData.email,
-      contactNumber: userData.contactNumber || '',
-      address: userData.address || '',
-      govIdType: userData.govIdType || 'None',
-      govIdNumber: userData.govIdNumber || '',
-      initials: getInitials(userData.name || userData.email.split('@')[0]),
+  useEffect(() => {
+    // 1. Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(mapSupabaseUser(session.user));
+        }
+      } catch (err) {
+        console.error('Error fetching initial auth session:', err);
+      } finally {
+        setLoading(false);
+      }
     };
-    setUser(fullUser);
+
+    getInitialSession();
+
+    // 2. Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(mapSupabaseUser(session.user));
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (userData) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: userData.email,
+      password: userData.password,
+    });
+    if (error) throw error;
+    if (data?.user) {
+      setUser(mapSupabaseUser(data.user));
+    }
   };
 
-  const register = (userData) => {
-    const fullUser = {
-      name: userData.fullName,
+  const register = async (userData) => {
+    const { data, error } = await supabase.auth.signUp({
       email: userData.email,
-      contactNumber: '',
-      address: '',
-      govIdType: 'None',
-      govIdNumber: '',
-      initials: getInitials(userData.fullName),
-    };
-    setUser(fullUser);
+      password: userData.password,
+      options: {
+        data: {
+          full_name: userData.fullName,
+        },
+      },
+    });
+    if (error) throw error;
+    if (data?.user) {
+      setUser(mapSupabaseUser(data.user));
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
     setUser(null);
     setNotifications(defaultNotifications);
   };
 
-  const updateUser = (updatedData) => {
-    setUser((prev) => {
-      if (!prev) return null;
-      const nextUser = {
-        ...prev,
-        ...updatedData,
-        initials: updatedData.name ? getInitials(updatedData.name) : prev.initials,
-      };
-      return nextUser;
+  const updateUser = async (updatedData) => {
+    const { data, error } = await supabase.auth.updateUser({
+      data: {
+        full_name: updatedData.name,
+        contact_number: updatedData.contactNumber,
+        address: updatedData.address,
+        gov_id_type: updatedData.govIdType,
+        gov_id_number: updatedData.govIdNumber,
+      },
     });
+    if (error) throw error;
+    if (data?.user) {
+      setUser(mapSupabaseUser(data.user));
+    }
+  };
+
+  const updatePassword = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    if (error) throw error;
   };
 
   const markNotificationRead = (id) => {
@@ -107,24 +168,17 @@ export const AuthProvider = ({ children }) => {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const getInitials = (name) => {
-    if (!name) return 'U';
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return parts[0][0].toUpperCase();
-  };
-
   return (
     <AuthContext.Provider
       value={{
         user,
+        loading,
         isAuthenticated: !!user,
         login,
         register,
         logout,
         updateUser,
+        updatePassword,
         notifications,
         unreadCount,
         markNotificationRead,
@@ -143,3 +197,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
