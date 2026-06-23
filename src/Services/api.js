@@ -1,4 +1,4 @@
-// Central API helper for communicating with the Spring Boot backend
+
 const API_BASE = 'http://localhost:8080/api';
 
 async function apiRequest(endpoint, options = {}) {
@@ -28,7 +28,6 @@ async function apiRequest(endpoint, options = {}) {
     }
 }
 
-// ===== Auth API =====
 export async function apiLogin(email, password) {
     return apiRequest('/auth/login', {
         method: 'POST',
@@ -63,7 +62,6 @@ export async function apiGetApplication(appId) {
     return apiRequest(`/applications/${appId}`);
 }
 
-// ===== Chat API =====
 export async function apiGetChatHistory(userId) {
     return apiRequest(`/chat/${userId}`);
 }
@@ -72,5 +70,12 @@ export async function apiSaveChatMessage(userId, sender, content) {
     return apiRequest('/chat', {
         method: 'POST',
         body: JSON.stringify({ userId, sender, content }),
+    });
+}
+
+export async function apiSyncUser(supabaseAuthId, fullName, email) {
+    return apiRequest('/auth/sync', {
+        method: 'POST',
+        body: JSON.stringify({ supabaseAuthId, fullName, email }),
     });
 }

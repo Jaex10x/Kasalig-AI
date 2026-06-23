@@ -13,6 +13,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "supabase_auth_id", unique = true)
+    private String supabaseAuthId;
+
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
@@ -44,9 +47,20 @@ public class User {
         this.password = password;
     }
 
+    // Constructor for Supabase Auth sync (no password needed)
+    public User(String supabaseAuthId, String fullName, String email) {
+        this.supabaseAuthId = supabaseAuthId;
+        this.fullName = fullName;
+        this.email = email;
+        this.password = "SUPABASE_AUTH"; // Placeholder — auth handled by Supabase
+    }
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public String getSupabaseAuthId() { return supabaseAuthId; }
+    public void setSupabaseAuthId(String supabaseAuthId) { this.supabaseAuthId = supabaseAuthId; }
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }

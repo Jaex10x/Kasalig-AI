@@ -51,13 +51,13 @@ const Register = () => {
 
   return (
     <div className="auth-page" id="register-page">
-      {/* Background Image Side */}
+      {}
       <div className="auth-bg" id="auth-bg-register">
         <div className="auth-bg__overlay" />
         <div className="auth-bg__content">
           <div className="auth-bg__branding">
             <div className="auth-bg__logo">
-              <MessageCircle size={22} />
+              <img src="/logo.png" alt="Kasalig AI" width={22} />
             </div>
             <div className="auth-bg__brand-info">
               <span className="auth-bg__brand-name">
@@ -100,7 +100,7 @@ const Register = () => {
           {/* Mobile Logo */}
           <div className="auth-mobile-logo">
             <div className="auth-bg__logo">
-              <MessageCircle size={18} />
+              <img src="/logo.png" alt="Kasalig AI" width={22} />
             </div>
             <span className="auth-mobile-logo__text">Kasalig</span>
           </div>

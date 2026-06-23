@@ -2,6 +2,7 @@ package com.kasalig.ai.controller;
 
 import com.kasalig.ai.dto.LoginRequest;
 import com.kasalig.ai.dto.RegisterRequest;
+import com.kasalig.ai.dto.SyncRequest;
 import com.kasalig.ai.model.User;
 import com.kasalig.ai.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,27 @@ public class AuthController {
 
     public AuthController(UserService userService) {
         this.userService = userService;
+    }
+
+   
+    @PostMapping("/sync")
+    public ResponseEntity<?> syncUser(@RequestBody SyncRequest request) {
+        try {
+            User user = userService.syncFromSupabase(
+                    request.getSupabaseAuthId(),
+                    request.getFullName(),
+                    request.getEmail()
+            );
+            return ResponseEntity.ok(Map.of(
+                    "id", user.getId(),
+                    "supabaseAuthId", user.getSupabaseAuthId(),
+                    "fullName", user.getFullName(),
+                    "email", user.getEmail(),
+                    "message", "User synced successfully"
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/register")
@@ -78,3 +100,4 @@ public class AuthController {
         }
     }
 }
+

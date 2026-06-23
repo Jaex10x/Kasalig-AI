@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../config/supabaseClient';
+import { apiSyncUser } from '../Services/api';
 
 const AuthContext = createContext(null);
 
@@ -48,11 +49,12 @@ export const AuthProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : defaultNotifications;
   });
 
-  const mapSupabaseUser = (supabaseUser) => {
+  const mapSupabaseUser = (supabaseUser, dbId = null) => {
     if (!supabaseUser) return null;
     const name = supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0];
     return {
       id: supabaseUser.id,
+      dbId, // Database ID from the users table (for chat, applications, etc.)
       name,
       email: supabaseUser.email,
       contactNumber: supabaseUser.user_metadata?.contact_number || '',
@@ -61,6 +63,19 @@ export const AuthProvider = ({ children }) => {
       govIdNumber: supabaseUser.user_metadata?.gov_id_number || '',
       initials: getInitials(name),
     };
+  };
+
+  // Sync Supabase Auth user to the backend users table
+  const syncToBackend = async (supabaseUser) => {
+    if (!supabaseUser) return null;
+    try {
+      const name = supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0];
+      const result = await apiSyncUser(supabaseUser.id, name, supabaseUser.email);
+      return result.id; // Returns the database user ID
+    } catch (err) {
+      console.warn('Backend sync failed (backend may be offline):', err.message);
+      return null;
+    }
   };
 
   useEffect(() => {
@@ -73,7 +88,8 @@ export const AuthProvider = ({ children }) => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          setUser(mapSupabaseUser(session.user));
+          const dbId = await syncToBackend(session.user);
+          setUser(mapSupabaseUser(session.user, dbId));
         }
       } catch (err) {
         console.error('Error fetching initial auth session:', err);
@@ -85,9 +101,10 @@ export const AuthProvider = ({ children }) => {
     getInitialSession();
 
     // 2. Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        setUser(mapSupabaseUser(session.user));
+        const dbId = await syncToBackend(session.user);
+        setUser(mapSupabaseUser(session.user, dbId));
       } else {
         setUser(null);
       }
@@ -106,7 +123,8 @@ export const AuthProvider = ({ children }) => {
     });
     if (error) throw error;
     if (data?.user) {
-      setUser(mapSupabaseUser(data.user));
+      const dbId = await syncToBackend(data.user);
+      setUser(mapSupabaseUser(data.user, dbId));
     }
   };
 
@@ -122,7 +140,8 @@ export const AuthProvider = ({ children }) => {
     });
     if (error) throw error;
     if (data?.user) {
-      setUser(mapSupabaseUser(data.user));
+      const dbId = await syncToBackend(data.user);
+      setUser(mapSupabaseUser(data.user, dbId));
     }
   };
 
