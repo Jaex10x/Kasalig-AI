@@ -57,7 +57,7 @@ const Register = () => {
         <div className="auth-bg__content">
           <div className="auth-bg__branding">
             <div className="auth-bg__logo">
-              <img src="/logo.png" alt="Kasalig AI" width={22} />
+              <img src="/logo.png" alt="Kasalig AI" width={40} />
             </div>
             <div className="auth-bg__brand-info">
               <span className="auth-bg__brand-name">
@@ -100,7 +100,7 @@ const Register = () => {
           {/* Mobile Logo */}
           <div className="auth-mobile-logo">
             <div className="auth-bg__logo">
-              <img src="/logo.png" alt="Kasalig AI" width={22} />
+              <img src="/logo.png" alt="Kasalig AI" width={40} />
             </div>
             <span className="auth-mobile-logo__text">Kasalig</span>
           </div>
