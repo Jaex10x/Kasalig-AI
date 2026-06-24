@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     const name = supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0];
     return {
       id: supabaseUser.id,
-      dbId, // Database ID from the users table (for chat, applications, etc.)
+      dbId,
       name,
       email: supabaseUser.email,
       contactNumber: supabaseUser.user_metadata?.contact_number || '',
@@ -65,13 +65,12 @@ export const AuthProvider = ({ children }) => {
     };
   };
 
-  // Sync Supabase Auth user to the backend users table
   const syncToBackend = async (supabaseUser) => {
     if (!supabaseUser) return null;
     try {
       const name = supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0];
       const result = await apiSyncUser(supabaseUser.id, name, supabaseUser.email);
-      return result.id; // Returns the database user ID
+      return result.id;
     } catch (err) {
       console.warn('Backend sync failed (backend may be offline):', err.message);
       return null;
@@ -83,7 +82,7 @@ export const AuthProvider = ({ children }) => {
   }, [notifications]);
 
   useEffect(() => {
-    // 1. Get initial session
+
     const getInitialSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -100,7 +99,7 @@ export const AuthProvider = ({ children }) => {
 
     getInitialSession();
 
-    // 2. Set up auth state change listener
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         const dbId = await syncToBackend(session.user);

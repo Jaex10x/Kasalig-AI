@@ -19,10 +19,10 @@ const Settings = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading, updateUser, updatePassword } = useAuth();
 
-  // Active Tab: 'profile', 'security', 'verification'
+
   const [activeTab, setActiveTab] = useState('profile');
   
-  // Profile Form State
+
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
@@ -30,24 +30,24 @@ const Settings = () => {
     address: '',
   });
 
-  // Security Form State
+
   const [securityData, setSecurityData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
 
-  // Verification Form State
+
   const [verificationData, setVerificationData] = useState({
     govIdType: 'None',
     govIdNumber: '',
   });
 
-  // Notifications / Alerts
+
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if not authenticated
+
   useEffect(() => {
     if (!loading) {
       if (!isAuthenticated) {
@@ -147,7 +147,7 @@ const Settings = () => {
       <Navbar />
 
       <div className="settings-container">
-        {/* Page Header */}
+
         <header className="settings-header">
           <h1 className="settings-header__title">Account Settings</h1>
           <p className="settings-header__subtitle">
@@ -155,7 +155,7 @@ const Settings = () => {
           </p>
         </header>
 
-        {/* Global Feedback Alert */}
+
         {alert.show && (
           <div className={`settings-alert settings-alert--${alert.type}`} id="settings-alert">
             {alert.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
@@ -164,7 +164,7 @@ const Settings = () => {
         )}
 
         <div className="settings-content">
-          {/* Settings Sidebar Tabs */}
+
           <aside className="settings-sidebar">
             <button
               className={`settings-tab-btn ${activeTab === 'profile' ? 'settings-tab-btn--active' : ''}`}
@@ -194,10 +194,10 @@ const Settings = () => {
             </button>
           </aside>
 
-          {/* Settings Main Forms */}
+
           <main className="settings-main">
             
-            {/* PROFILE DETAILS TAB */}
+
             {activeTab === 'profile' && (
               <div className="settings-card" id="profile-settings-card">
                 <div className="settings-card__header">
@@ -286,7 +286,7 @@ const Settings = () => {
               </div>
             )}
 
-            {/* SECURITY TAB */}
+
             {activeTab === 'security' && (
               <div className="settings-card" id="security-settings-card">
                 <div className="settings-card__header">
@@ -361,7 +361,7 @@ const Settings = () => {
               </div>
             )}
 
-            {/* VERIFICATION & ID LINK TAB */}
+
             {activeTab === 'verification' && (
               <div className="settings-card" id="verification-settings-card">
                 <div className="settings-card__header">

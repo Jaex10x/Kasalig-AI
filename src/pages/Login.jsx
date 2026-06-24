@@ -49,7 +49,7 @@ const Login = () => {
 
   return (
     <div className="auth-page" id="login-page">
-      {/* Background Image Side */}
+
       <div className="auth-bg" id="auth-bg">
         <div className="auth-bg__overlay" />
         <div className="auth-bg__content">
@@ -92,10 +92,10 @@ const Login = () => {
         </div>
       </div>
 
-      {}
+
       <div className="auth-form-side" id="auth-form-side">
         <div className="auth-form-container">
-          {}
+
           <div className="auth-mobile-logo">
             <div className="auth-bg__logo">
               <img src="/logo.png" alt="Kasalig AI" width={22} />

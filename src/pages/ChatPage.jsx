@@ -42,7 +42,6 @@ const ChatPage = () => {
     scrollToBottom();
   }, [messages, isStreaming]);
 
-  // Focus input when streaming ends
   useEffect(() => {
     if (!isStreaming && inputRef.current) {
       inputRef.current.focus();
@@ -50,7 +49,6 @@ const ChatPage = () => {
   }, [isStreaming]);
 
   const formatMessageText = (text) => {
-    // Split by bold markers
     const parts = text.split(/(\*\*[^*]+\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
@@ -95,7 +93,7 @@ const ChatPage = () => {
       isComplete: true,
     };
 
-    // Create a placeholder bot message for streaming
+
     const botMessageId = Date.now() + 1;
     streamingMessageId.current = botMessageId;
 
@@ -113,7 +111,7 @@ const ChatPage = () => {
 
     try {
       await askGeminiStream(messageText, (accumulatedText) => {
-        // Update the bot message with the accumulated streamed text
+
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === botMessageId
@@ -123,7 +121,7 @@ const ChatPage = () => {
         );
       });
 
-      // Mark the message as complete
+
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === botMessageId
@@ -158,7 +156,7 @@ const ChatPage = () => {
 
   return (
     <div className="chat-page" id="chat-page">
-      {/* Chat Header */}
+
       <header className="chat-header" id="chat-header">
         <div className="chat-header__left">
           <button
@@ -209,7 +207,7 @@ const ChatPage = () => {
         </div>
       </header>
 
-      {/* Chat Messages Area */}
+
       <main className="chat-messages" id="chat-messages">
         {messages.map((message) => (
           <div key={message.id} className={`chat-bubble-wrapper chat-bubble-wrapper--${message.type}`}>
@@ -223,7 +221,6 @@ const ChatPage = () => {
             )}
             <div className={`chat-bubble chat-bubble--${message.type} ${!message.isComplete ? 'chat-bubble--streaming' : ''}`}>
               {message.type === 'bot' && message.text === '' && !message.isComplete ? (
-                // Show typing dots while waiting for first chunk
                 <div className="chat-typing-dots">
                   <span className="typing-dot"></span>
                   <span className="typing-dot"></span>
@@ -241,12 +238,12 @@ const ChatPage = () => {
           </div>
         ))}
 
-        {/* Timestamp after first bot message */}
+
         {messages.length >= 1 && (
           <div className="chat-timestamp">{messages[0].time}</div>
         )}
 
-        {/* Quick action chips - show only when there's just the welcome message */}
+
         {messages.length === 1 && (
           <div className="chat-quick-actions" id="chat-quick-actions">
             {quickActions.map((action) => (
@@ -264,7 +261,7 @@ const ChatPage = () => {
         <div ref={messagesEndRef} />
       </main>
 
-      {/* Suggested Questions */}
+
       <div className="chat-suggestions" id="chat-suggestions">
         {suggestedQuestions.map((question) => (
           <button
@@ -279,7 +276,7 @@ const ChatPage = () => {
         ))}
       </div>
 
-      {/* Input Area */}
+
       <footer className="chat-input-area" id="chat-input-area">
         <div className="chat-input-wrapper">
           <input

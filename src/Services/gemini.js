@@ -22,7 +22,6 @@ Guidelines:
 - If you don't know something, say so honestly and suggest where to find the information
 - Keep responses conversational and friendly, like a live chat agent would`;
 
-// Maintain conversation history for context
 let conversationHistory = [];
 
 /**
@@ -55,13 +54,13 @@ export async function askGeminiStream(prompt, onChunk) {
     }
 
     try {
-        // Add user message to conversation history
+
         conversationHistory.push({
             role: "user",
             parts: [{ text: prompt }],
         });
 
-        // Build the contents array with full conversation history
+
         const contents = conversationHistory.map(msg => ({
             role: msg.role,
             parts: msg.parts,
@@ -87,13 +86,13 @@ export async function askGeminiStream(prompt, onChunk) {
             }
         }
 
-        // Add assistant response to conversation history
+
         conversationHistory.push({
             role: "model",
             parts: [{ text: fullText }],
         });
 
-        // Keep conversation history manageable (last 20 turns)
+
         if (conversationHistory.length > 40) {
             conversationHistory = conversationHistory.slice(-40);
         }
@@ -102,7 +101,7 @@ export async function askGeminiStream(prompt, onChunk) {
     } catch (error) {
         console.error("Gemini API Error:", error);
 
-        // Remove the failed user message from history
+
         conversationHistory.pop();
 
         if (error.message?.includes("API key")) {

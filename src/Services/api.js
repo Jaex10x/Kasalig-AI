@@ -53,7 +53,7 @@ export async function apiUpdateProfile(userId, updates) {
     });
 }
 
-// ===== Applications API =====
+
 export async function apiGetApplications(userId) {
     return apiRequest(`/applications?userId=${userId}`);
 }

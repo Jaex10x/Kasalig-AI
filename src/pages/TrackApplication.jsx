@@ -149,7 +149,7 @@ const TrackApplication = () => {
       <Navbar />
 
       <div className="track-content">
-        {/* Page Header */}
+
         <header className="track-header" id="track-header">
           <h1 className="track-header__title">My Applications</h1>
           <p className="track-header__subtitle">
@@ -157,7 +157,7 @@ const TrackApplication = () => {
           </p>
         </header>
 
-        {/* Summary Stats */}
+
         <div className="track-stats" id="track-stats">
           {summaryStats.map((stat) => (
             <div className="track-stat-card" key={stat.label}>
@@ -169,7 +169,7 @@ const TrackApplication = () => {
           ))}
         </div>
 
-        {/* Search */}
+
         <div className="track-search" id="track-search">
           <div className="track-search__input-wrapper">
             <Search size={16} className="track-search__icon" />
@@ -184,7 +184,7 @@ const TrackApplication = () => {
           </div>
         </div>
 
-        {/* Filter Tabs */}
+
         <div className="track-filters" id="track-filters">
           {filterTabs.map((tab) => (
             <button
@@ -199,7 +199,7 @@ const TrackApplication = () => {
           ))}
         </div>
 
-        {/* Application Cards */}
+
         <div className="track-cards" id="track-cards">
           {filteredApps.map((app) => {
             const isExpanded = expandedCard === app.id;
@@ -211,7 +211,7 @@ const TrackApplication = () => {
                 key={app.id}
                 id={`track-card-${app.id}`}
               >
-                {/* Card Header */}
+
                 <div
                   className="track-card__header"
                   onClick={() => setExpandedCard(isExpanded ? null : app.id)}
@@ -232,7 +232,7 @@ const TrackApplication = () => {
                   </div>
                 </div>
 
-                {/* Progress Bar */}
+
                 <div className="track-card__progress">
                   <div className="track-progress-bar">
                     <div
@@ -248,7 +248,7 @@ const TrackApplication = () => {
                   </span>
                 </div>
 
-                {/* Dates */}
+
                 <div className="track-card__dates">
                   <span>
                     Submitted: <strong>{app.submittedDate}</strong>
@@ -264,7 +264,7 @@ const TrackApplication = () => {
                   ) : null}
                 </div>
 
-                {/* Expanded Timeline */}
+
                 {isExpanded && (
                   <div className="track-card__expanded">
                     <h4 className="track-timeline__title">APPLICATION TIMELINE</h4>
@@ -294,7 +294,7 @@ const TrackApplication = () => {
                       ))}
                     </div>
 
-                    {/* Pickup Info */}
+
                     {app.pickupInfo && (
                       <div className="track-pickup-notice" id="pickup-notice">
                         <div className="track-pickup-notice__icon">
@@ -318,7 +318,7 @@ const TrackApplication = () => {
           })}
         </div>
 
-        {/* Bottom CTA */}
+
         <div className="track-cta" id="track-cta">
           <div className="track-cta__text">
             <h3 className="track-cta__title">Need Another Service?</h3>

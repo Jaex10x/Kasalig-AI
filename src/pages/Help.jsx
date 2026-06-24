@@ -178,7 +178,6 @@ const Help = () => {
     setExpandedFaq((prev) => (prev === faqId ? null : faqId));
   };
 
-  // Filter FAQs based on search query
   const getFilteredFaqs = () => {
     if (!searchQuery.trim()) {
       return faqData[activeCategory] || [];
@@ -198,7 +197,7 @@ const Help = () => {
     <div className="help-page" id="help-page">
       <Navbar />
 
-      {/* Hero Section */}
+
       <div className="help-hero" id="help-hero">
         <div className="help-hero__icon">
           <HelpCircle size={32} />
@@ -209,7 +208,7 @@ const Help = () => {
         </p>
       </div>
 
-      {/* Search Bar */}
+
       <div className="help-search-wrapper" id="help-search">
         <div className="help-search">
           <Search size={18} className="help-search__icon" />
@@ -224,11 +223,11 @@ const Help = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+
       <div className="help-content" id="help-content">
-        {/* Sidebar */}
+
         <aside className="help-sidebar" id="help-sidebar">
-          {/* Categories */}
+
           <div className="help-categories">
             <h3 className="help-sidebar__heading">CATEGORIES</h3>
             <div className="help-categories__list">
@@ -254,7 +253,7 @@ const Help = () => {
             </div>
           </div>
 
-          {/* Quick Apply */}
+
           <div className="help-quick-apply">
             <h3 className="help-sidebar__heading">QUICK APPLY</h3>
             <div className="help-quick-apply__list">
@@ -272,7 +271,7 @@ const Help = () => {
             </div>
           </div>
 
-          {/* Still have questions CTA */}
+
           <div className="help-cta-card" id="help-cta-card">
             <MessageCircle size={24} className="help-cta-card__icon" />
             <h4 className="help-cta-card__title">Still have questions?</h4>
@@ -289,7 +288,7 @@ const Help = () => {
           </div>
         </aside>
 
-        {/* FAQ Content */}
+
         <div className="help-faq" id="help-faq">
           {filteredFaqs.length === 0 ? (
             <div className="help-faq__empty">
@@ -364,7 +363,7 @@ const Help = () => {
         </div>
       </div>
 
-      {/* Bottom CTA */}
+
       <div className="help-bottom-cta" id="help-bottom-cta">
         <div className="help-bottom-cta__text">
           <h3 className="help-bottom-cta__title">Can&apos;t find what you&apos;re looking for?</h3>

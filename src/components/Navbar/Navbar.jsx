@@ -26,7 +26,6 @@ const Navbar = () => {
   const notifRef = useRef(null);
   const userRef = useRef(null);
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target)) {
@@ -110,7 +109,7 @@ const Navbar = () => {
       </div>
 
       <div className="navbar__actions">
-        {/* Notification Bell */}
+
         <div className="navbar-dropdown-anchor" ref={notifRef}>
           <button
             className="navbar__notification"
@@ -131,7 +130,7 @@ const Navbar = () => {
             )}
           </button>
 
-          {/* Notification Dropdown */}
+
           {showNotifications && isAuthenticated && (
             <div className="navbar-notif-dropdown" id="notification-dropdown">
               <div className="navbar-notif-dropdown__header">
@@ -179,7 +178,7 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* User Menu */}
+
         <div className="navbar-dropdown-anchor" ref={userRef}>
           {isAuthenticated ? (
             <div
@@ -203,7 +202,7 @@ const Navbar = () => {
             </Link>
           )}
 
-          {/* User Dropdown */}
+
           {showUserMenu && isAuthenticated && (
             <div className="navbar-user-dropdown" id="user-dropdown">
               <div className="navbar-user-dropdown__header">

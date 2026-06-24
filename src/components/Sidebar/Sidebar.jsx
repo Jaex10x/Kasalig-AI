@@ -55,7 +55,7 @@ const announcementsData = [
 const Sidebar = () => {
   return (
     <aside className="sidebar" id="sidebar">
-      {/* My Applications Widget */}
+
       <div className="applications-widget" id="applications-widget">
         <div className="widget-header">
           <h3 className="widget-header__title">My Applications</h3>
@@ -85,7 +85,7 @@ const Sidebar = () => {
         </Link>
       </div>
 
-      {/* Announcements Widget */}
+
       <div className="announcements-widget" id="announcements-widget">
         <div className="widget-header">
           <h3 className="widget-header__title">
@@ -108,7 +108,7 @@ const Sidebar = () => {
         ))}
       </div>
 
-      {/* Ask Kasalig Widget */}
+
       <div className="ask-kasalig-widget" id="ask-kasalig-widget">
         <div className="ask-kasalig__header">
           <div className="ask-kasalig__icon">

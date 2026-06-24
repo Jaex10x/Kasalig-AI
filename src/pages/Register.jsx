@@ -51,7 +51,7 @@ const Register = () => {
 
   return (
     <div className="auth-page" id="register-page">
-      {}
+
       <div className="auth-bg" id="auth-bg-register">
         <div className="auth-bg__overlay" />
         <div className="auth-bg__content">
@@ -94,10 +94,8 @@ const Register = () => {
         </div>
       </div>
 
-      {/* Form Side */}
       <div className="auth-form-side" id="auth-form-side-register">
         <div className="auth-form-container">
-          {/* Mobile Logo */}
           <div className="auth-mobile-logo">
             <div className="auth-bg__logo">
               <img src="/logo.png" alt="Kasalig AI" width={40} />
