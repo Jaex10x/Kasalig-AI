@@ -1,27 +1,30 @@
-import { ArrowRight, Search, Bell, MessageCircle, Eye } from 'lucide-react';
+import { ArrowRight, Search, Bell, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const applicationsData = [
   {
-    id: 'KSL-2026-00142',
-    name: 'National ID',
-    status: 'Ready for Pickup',
-    statusClass: 'application-item__status--ready',
-    dotClass: 'application-item__dot--green',
-  },
-  {
     id: 'KSL-2026-00213',
-    name: 'Business Reg.',
+    name: 'Business Permit',
+    municipality: 'Cebu City',
     status: 'Under Review',
     statusClass: 'application-item__status--review',
     dotClass: 'application-item__dot--blue',
   },
   {
     id: 'KSL-2026-00287',
-    name: 'Birth Certificate',
+    name: 'Business Permit',
+    municipality: 'Mandaue City',
     status: 'Pending',
     statusClass: 'application-item__status--pending',
     dotClass: 'application-item__dot--orange',
+  },
+  {
+    id: 'KSL-2026-00305',
+    name: 'Registry Correction',
+    municipality: 'Talisay City',
+    status: 'Under Review',
+    statusClass: 'application-item__status--review',
+    dotClass: 'application-item__dot--blue',
   },
 ];
 
@@ -30,25 +33,25 @@ const announcementsData = [
     id: 1,
     badge: 'New',
     badgeClass: 'announcement-item__badge--new',
-    title: 'Online Passport Renewal Now Available',
-    text: 'DFA online passport renewal is now available for all citizens through the Kasalig platform.',
-    date: 'May 10, 2026',
+    title: 'Online Business Permit Applications Now Open',
+    text: 'All municipalities in the Province of Cebu now accept online business permit applications through Kasalig.',
+    date: 'June 28, 2026',
   },
   {
     id: 2,
     badge: 'Important',
     badgeClass: 'announcement-item__badge--important',
-    title: 'Holiday Notice — May 12',
-    text: 'Government offices will be closed on May 12 (National Day of Valor). Online services remain available.',
-    date: 'May 8, 2026',
+    title: 'Civil Registry Correction Timelines',
+    text: 'Spelling and clerical error corrections on registry documents are now processed in 3–8 months.',
+    date: 'June 20, 2026',
   },
   {
     id: 3,
     badge: 'Update',
     badgeClass: 'announcement-item__badge--update',
-    title: 'Faster Business Registration',
-    text: 'Processing time for DTI business registration has been reduced to 3–5 working days.',
-    date: 'May 5, 2026',
+    title: 'New Requirements Reminder',
+    text: 'Starting July 2026, all business permit applicants must include a Community Tax Certificate (Cedula).',
+    date: 'June 15, 2026',
   },
 ];
 
@@ -70,7 +73,7 @@ const Sidebar = () => {
               <span className={`application-item__dot ${app.dotClass}`}></span>
               <div className="application-item__details">
                 <span className="application-item__name">{app.name}</span>
-                <span className="application-item__id">{app.id}</span>
+                <span className="application-item__id">{app.municipality} · {app.id}</span>
               </div>
             </div>
             <span className={`application-item__status ${app.statusClass}`}>
@@ -120,8 +123,8 @@ const Sidebar = () => {
           </div>
         </div>
         <p className="ask-kasalig__text">
-          Have questions? I'm available 24/7 to guide you through
-          any government service, step by step.
+          Have questions about business permits? I'm available 24/7 to guide you through
+          the application process, step by step.
         </p>
         <Link to="/chat" className="ask-kasalig__btn" id="start-conversation-btn">
           Start a Conversation

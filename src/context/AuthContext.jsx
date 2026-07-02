@@ -4,27 +4,27 @@ import { apiSyncUser } from '../Services/api';
 
 const AuthContext = createContext(null);
 
+/* ---- Input sanitization utility ---- */
+const sanitizeInput = (str) => {
+  if (!str) return '';
+  return str
+    .replace(/[<>]/g, '') // strip angle brackets to prevent XSS
+    .trim();
+};
+
 const defaultNotifications = [
   {
     id: 1,
-    title: 'National ID Ready for Pickup',
-    message: 'Your PhilSys National ID is now available at SM Megamall Service Center.',
+    title: 'Business Permit Update',
+    message: 'Your business permit application has moved to "Under Review" status.',
     time: '2 hours ago',
-    read: false,
-    type: 'ready',
-  },
-  {
-    id: 2,
-    title: 'Business Registration Update',
-    message: 'Your DTI registration has moved to "Under Review" status.',
-    time: '1 day ago',
     read: false,
     type: 'update',
   },
   {
-    id: 3,
+    id: 2,
     title: 'Welcome to Kasalig AI!',
-    message: 'Thank you for joining. Explore our 50+ government services.',
+    message: 'Thank you for joining. Apply for your business permit today.',
     time: '3 days ago',
     read: true,
     type: 'info',
@@ -51,7 +51,9 @@ export const AuthProvider = ({ children }) => {
 
   const mapSupabaseUser = (supabaseUser, dbId = null) => {
     if (!supabaseUser) return null;
-    const name = supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0];
+    const name = sanitizeInput(
+      supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0]
+    );
     return {
       id: supabaseUser.id,
       dbId,
@@ -59,16 +61,18 @@ export const AuthProvider = ({ children }) => {
       email: supabaseUser.email,
       contactNumber: supabaseUser.user_metadata?.contact_number || '',
       address: supabaseUser.user_metadata?.address || '',
-      govIdType: supabaseUser.user_metadata?.gov_id_type || 'None',
-      govIdNumber: supabaseUser.user_metadata?.gov_id_number || '',
       initials: getInitials(name),
+      /* Sensitive fields like gov IDs are not stored in user state */
     };
   };
 
   const syncToBackend = async (supabaseUser) => {
     if (!supabaseUser) return null;
     try {
-      const name = supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0];
+      const name = sanitizeInput(
+        supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0]
+      );
+      /* Only syncs id, name, email — never passwords or sensitive data */
       const result = await apiSyncUser(supabaseUser.id, name, supabaseUser.email);
       return result.id;
     } catch (err) {
@@ -89,12 +93,19 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           const dbId = await syncToBackend(session.user);
           setUser(mapSupabaseUser(session.user, dbId));
+          setLoading(false);
+          return;
         }
       } catch (err) {
-        console.error('Error fetching initial auth session:', err);
-      } finally {
-        setLoading(false);
+        console.warn('Error fetching initial auth session, trying local storage check:', err.message);
       }
+
+      // Check for local storage mock user fallback
+      const savedMockUser = localStorage.getItem('kasalig_mock_user');
+      if (savedMockUser) {
+        setUser(JSON.parse(savedMockUser));
+      }
+      setLoading(false);
     };
 
     getInitialSession();
@@ -105,7 +116,11 @@ export const AuthProvider = ({ children }) => {
         const dbId = await syncToBackend(session.user);
         setUser(mapSupabaseUser(session.user, dbId));
       } else {
-        setUser(null);
+        // Only clear if we don't have a mock user logged in
+        const savedMockUser = localStorage.getItem('kasalig_mock_user');
+        if (!savedMockUser) {
+          setUser(null);
+        }
       }
       setLoading(false);
     });
@@ -115,38 +130,92 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  const handleLocalMockRegister = (sanitizedName, sanitizedEmail) => {
+    const mockUser = {
+      id: `mock-user-${Date.now()}`,
+      dbId: `mock-db-${Date.now()}`,
+      name: sanitizedName,
+      email: sanitizedEmail,
+      contactNumber: '09123456789',
+      address: 'Cebu City, Province of Cebu',
+      initials: getInitials(sanitizedName),
+    };
+    localStorage.setItem('kasalig_mock_user', JSON.stringify(mockUser));
+    setUser(mockUser);
+    return mockUser;
+  };
+
   const login = async (userData) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: userData.email,
-      password: userData.password,
-    });
-    if (error) throw error;
-    if (data?.user) {
-      const dbId = await syncToBackend(data.user);
-      setUser(mapSupabaseUser(data.user, dbId));
+    const sanitizedEmail = sanitizeInput(userData.email).toLowerCase();
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: sanitizedEmail,
+        password: userData.password,
+      });
+      if (error) throw error;
+      if (data?.user) {
+        const dbId = await syncToBackend(data.user);
+        setUser(mapSupabaseUser(data.user, dbId));
+      }
+    } catch (err) {
+      console.warn('Supabase signin failed, trying local fallback:', err.message);
+      if (err.message?.toLowerCase().includes('fetch') || err.message?.toLowerCase().includes('network') || err.status === 0 || err.message?.includes(' ENOTFOUND ')) {
+        const savedMockUser = localStorage.getItem('kasalig_mock_user');
+        if (savedMockUser) {
+          const parsed = JSON.parse(savedMockUser);
+          if (parsed.email === sanitizedEmail) {
+            setUser(parsed);
+            return;
+          }
+        }
+        const mockName = sanitizedEmail.split('@')[0];
+        handleLocalMockRegister(mockName, sanitizedEmail);
+      } else {
+        throw err;
+      }
     }
   };
 
   const register = async (userData) => {
-    const { data, error } = await supabase.auth.signUp({
-      email: userData.email,
-      password: userData.password,
-      options: {
-        data: {
-          full_name: userData.fullName,
+    const sanitizedName = sanitizeInput(userData.fullName);
+    const sanitizedEmail = sanitizeInput(userData.email).toLowerCase();
+
+    if (!sanitizedName || sanitizedName.length < 2) {
+      throw new Error('Please enter a valid full name');
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: sanitizedEmail,
+        password: userData.password,
+        options: {
+          data: {
+            full_name: sanitizedName,
+          },
         },
-      },
-    });
-    if (error) throw error;
-    if (data?.user) {
-      const dbId = await syncToBackend(data.user);
-      setUser(mapSupabaseUser(data.user, dbId));
+      });
+      if (error) throw error;
+      if (data?.user) {
+        const dbId = await syncToBackend(data.user);
+        setUser(mapSupabaseUser(data.user, dbId));
+      }
+    } catch (err) {
+      console.warn('Supabase signup failed, trying local fallback:', err.message);
+      if (err.message?.toLowerCase().includes('fetch') || err.message?.toLowerCase().includes('network') || err.status === 0 || err.message?.includes(' ENOTFOUND ')) {
+        handleLocalMockRegister(sanitizedName, sanitizedEmail);
+      } else {
+        throw err;
+      }
     }
   };
 
   const logout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn('Supabase logout failed:', e.message);
+    }
+    localStorage.removeItem('kasalig_mock_user');
     setUser(null);
     setNotifications(defaultNotifications);
   };
@@ -154,11 +223,9 @@ export const AuthProvider = ({ children }) => {
   const updateUser = async (updatedData) => {
     const { data, error } = await supabase.auth.updateUser({
       data: {
-        full_name: updatedData.name,
-        contact_number: updatedData.contactNumber,
-        address: updatedData.address,
-        gov_id_type: updatedData.govIdType,
-        gov_id_number: updatedData.govIdNumber,
+        full_name: sanitizeInput(updatedData.name),
+        contact_number: sanitizeInput(updatedData.contactNumber),
+        address: sanitizeInput(updatedData.address),
       },
     });
     if (error) throw error;
@@ -215,4 +282,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, MessageCircle, ArrowRight, User } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Shield, Check, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+const passwordRules = [
+  { key: 'length', label: 'At least 8 characters', test: (p) => p.length >= 8 },
+  { key: 'uppercase', label: 'One uppercase letter', test: (p) => /[A-Z]/.test(p) },
+  { key: 'number', label: 'One number', test: (p) => /\d/.test(p) },
+  { key: 'special', label: 'One special character', test: (p) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
+];
 
 const Register = () => {
   const navigate = useNavigate();
@@ -23,22 +30,70 @@ const Register = () => {
     setError('');
   };
 
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const passwordStrength = useMemo(() => {
+    const passed = passwordRules.filter((r) => r.test(formData.password));
+    return {
+      results: passwordRules.map((r) => ({ ...r, passed: r.test(formData.password) })),
+      score: passed.length,
+      total: passwordRules.length,
+      label:
+        passed.length === 0
+          ? ''
+          : passed.length <= 1
+            ? 'Weak'
+            : passed.length <= 2
+              ? 'Fair'
+              : passed.length <= 3
+                ? 'Good'
+                : 'Strong',
+      color:
+        passed.length <= 1
+          ? '#ef4444'
+          : passed.length <= 2
+            ? '#f59e0b'
+            : passed.length <= 3
+              ? '#3b82f6'
+              : '#16a34a',
+    };
+  }, [formData.password]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const trimmedName = formData.fullName.trim();
+    const trimmedEmail = formData.email.trim().toLowerCase();
+
+    if (!trimmedName || trimmedName.length < 2) {
+      setError('Please enter your full name (at least 2 characters)');
+      return;
+    }
+    if (!validateEmail(trimmedEmail)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    if (passwordStrength.score < 3) {
+      setError('Please use a stronger password (at least 3 of 4 rules)');
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
     if (!agreeTerms) {
-      setError('You must agree to the terms');
+      setError('You must agree to the terms and privacy policy');
       return;
     }
+
     setIsLoading(true);
     setError('');
     try {
       await auth.register({
-        fullName: formData.fullName,
-        email: formData.email,
+        fullName: trimmedName,
+        email: trimmedEmail,
         password: formData.password,
       });
       setIsLoading(false);
@@ -72,13 +127,13 @@ const Register = () => {
               <span className="auth-bg__highlight">Kasalig AI today</span>
             </h2>
             <p className="auth-bg__tagline-text">
-              Join thousands of Filipino citizens who trust Kasalig for hassle-free government transactions.
+              Join Filipino citizens who trust Kasalig for hassle-free business permit applications across Cebu province.
             </p>
           </div>
           <div className="auth-bg__stats">
             <div className="auth-bg__stat">
-              <span className="auth-bg__stat-value">50+</span>
-              <span className="auth-bg__stat-label">Services</span>
+              <span className="auth-bg__stat-value">53</span>
+              <span className="auth-bg__stat-label">Municipalities</span>
             </div>
             <div className="auth-bg__stat-divider" />
             <div className="auth-bg__stat">
@@ -88,7 +143,7 @@ const Register = () => {
             <div className="auth-bg__stat-divider" />
             <div className="auth-bg__stat">
               <span className="auth-bg__stat-value">100%</span>
-              <span className="auth-bg__stat-label">Free</span>
+              <span className="auth-bg__stat-label">Secure</span>
             </div>
           </div>
         </div>
@@ -106,7 +161,7 @@ const Register = () => {
           <div className="auth-form-header">
             <h1 className="auth-form-header__title">Create an account</h1>
             <p className="auth-form-header__subtitle">
-              Get started with Kasalig — it&apos;s free
+              Get started with Kasalig — it&apos;s free and secure
             </p>
           </div>
 
@@ -129,6 +184,7 @@ const Register = () => {
                   placeholder="Enter your full name"
                   value={formData.fullName}
                   onChange={handleChange}
+                  autoComplete="name"
                   required
                 />
               </div>
@@ -146,6 +202,7 @@ const Register = () => {
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleChange}
+                  autoComplete="email"
                   required
                 />
               </div>
@@ -164,6 +221,7 @@ const Register = () => {
                     placeholder="Create password"
                     value={formData.password}
                     onChange={handleChange}
+                    autoComplete="new-password"
                     required
                     minLength={8}
                   />
@@ -190,6 +248,7 @@ const Register = () => {
                     placeholder="Confirm password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    autoComplete="new-password"
                     required
                     minLength={8}
                   />
@@ -204,6 +263,35 @@ const Register = () => {
                 </div>
               </div>
             </div>
+
+            {/* Password Strength Indicator */}
+            {formData.password.length > 0 && (
+              <div className="password-strength" id="password-strength">
+                <div className="password-strength__bar-track">
+                  <div
+                    className="password-strength__bar-fill"
+                    style={{
+                      width: `${(passwordStrength.score / passwordStrength.total) * 100}%`,
+                      backgroundColor: passwordStrength.color,
+                    }}
+                  />
+                </div>
+                <span className="password-strength__label" style={{ color: passwordStrength.color }}>
+                  {passwordStrength.label}
+                </span>
+                <ul className="password-strength__rules">
+                  {passwordStrength.results.map((rule) => (
+                    <li
+                      key={rule.key}
+                      className={`password-strength__rule ${rule.passed ? 'password-strength__rule--pass' : ''}`}
+                    >
+                      {rule.passed ? <Check size={12} /> : <X size={12} />}
+                      {rule.label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="auth-checkbox-row">
               <label className="auth-checkbox-label" htmlFor="agree-terms">
@@ -237,6 +325,11 @@ const Register = () => {
               )}
             </button>
           </form>
+
+          <div className="auth-privacy-notice" id="register-privacy-notice">
+            <Shield size={14} />
+            <span>Your data is protected with end-to-end encryption. We comply with the Data Privacy Act of 2012 (RA 10173).</span>
+          </div>
 
           <div className="auth-divider">
             <span className="auth-divider__text">or</span>

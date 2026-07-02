@@ -2,6 +2,40 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Home, ArrowLeft, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { askGeminiStream, resetConversation } from '../Services/gemini';
+import ApplicationCard from '../components/ApplicationCard/ApplicationCard';
+
+/* Maps keywords in AI responses to service IDs */
+const SERVICE_KEYWORDS = [
+  { keywords: ['business registration', 'dti registration', 'register your business', 'register a business', 'business permit', 'permit'], serviceId: 'business-permit' },
+  { keywords: ['civil registry', 'clerical correction', 'spelling correction', 'birth certificate correction', 'marriage certificate correction', 'registry correction', 'correction'], serviceId: 'civil-registry-corrections' },
+];
+
+const APPLICATION_TRIGGERS = [
+  'you can apply', 'start your application', 'proceed with', 'apply for',
+  'submit an application', 'begin your application', 'ready to apply',
+  'application process', 'how to apply', 'steps to apply', 'application form',
+  'here are the steps', 'here\'s how', 'requirements', 'you will need',
+  'you need to', 'to get your', 'to obtain', 'to request',
+];
+
+/**
+ * Detect which service the bot is talking about and whether it's suggesting the user apply.
+ * Returns an array of serviceIds to show cards for.
+ */
+const detectApplicationIntent = (text) => {
+  const lower = text.toLowerCase();
+  const hasTrigger = APPLICATION_TRIGGERS.some((t) => lower.includes(t));
+  if (!hasTrigger) return [];
+
+  const matched = new Set();
+  SERVICE_KEYWORDS.forEach(({ keywords, serviceId }) => {
+    if (keywords.some((kw) => lower.includes(kw))) {
+      matched.add(serviceId);
+    }
+  });
+
+  return Array.from(matched);
+};
 
 const ChatPage = () => {
   const navigate = useNavigate();
@@ -12,6 +46,7 @@ const ChatPage = () => {
       text: `Magandang araw! I'm your friend **Kasalig AI**, your Government Services AI Assistant. I'm here to help you navigate government transactions quickly and easily.\n\nWhat can I help you with today?`,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isComplete: true,
+      detectedServices: [],
     },
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -21,17 +56,17 @@ const ChatPage = () => {
   const streamingMessageId = useRef(null);
 
   const quickActions = [
-    'National ID Application',
-    'Document Requests',
-    'Business Registration',
-    'What services are available?',
+    'Apply for Business Permit',
+    'Civil Registry Correction',
+    'How long does business permit processing take?',
+    'What is Cebu Municipality tracker?',
   ];
 
   const suggestedQuestions = [
-    'What services are available?',
-    'How long does processing take?',
-    'What payment methods are accepted?',
-    'Can I track my application?',
+    'What is Cebu Municipality tracker?',
+    'How long does a civil registry correction take?',
+    'What are the requirements for business permits?',
+    'Can I track my business permit application?',
   ];
 
   const scrollToBottom = () => {
@@ -74,6 +109,7 @@ const ChatPage = () => {
         text: `Magandang araw! I'm your friend **Kasalig AI**, your Government Services AI Assistant. I'm here to help you navigate government transactions quickly and easily.\n\nWhat can I help you with today?`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isComplete: true,
+        detectedServices: [],
       },
     ]);
     setInputValue('');
@@ -91,6 +127,7 @@ const ChatPage = () => {
       text: messageText,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isComplete: true,
+      detectedServices: [],
     };
 
 
@@ -103,6 +140,7 @@ const ChatPage = () => {
       text: '',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isComplete: false,
+      detectedServices: [],
     };
 
     setMessages((prev) => [...prev, userMessage, botMessage]);
@@ -122,13 +160,15 @@ const ChatPage = () => {
       });
 
 
-      setMessages((prev) =>
-        prev.map((msg) =>
+      setMessages((prev) => {
+        const botMsg = prev.find((m) => m.id === botMessageId);
+        const services = botMsg ? detectApplicationIntent(botMsg.text) : [];
+        return prev.map((msg) =>
           msg.id === botMessageId
-            ? { ...msg, isComplete: true, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+            ? { ...msg, isComplete: true, detectedServices: services, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
             : msg
-        )
-      );
+        );
+      });
     } catch (error) {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -137,6 +177,7 @@ const ChatPage = () => {
                 ...msg,
                 text: "I'm sorry, something went wrong. Please try again.",
                 isComplete: true,
+                detectedServices: [],
               }
             : msg
         )
@@ -217,22 +258,33 @@ const ChatPage = () => {
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                   <polyline points="9 22 9 12 15 12 15 22"/>
                 </svg>
+                <span className="chat-header__status-dot"></span>
               </div>
             )}
-            <div className={`chat-bubble chat-bubble--${message.type} ${!message.isComplete ? 'chat-bubble--streaming' : ''}`}>
-              {message.type === 'bot' && message.text === '' && !message.isComplete ? (
-                <div className="chat-typing-dots">
-                  <span className="typing-dot"></span>
-                  <span className="typing-dot"></span>
-                  <span className="typing-dot"></span>
+            <div className="chat-bubble-content-wrap">
+              <div className={`chat-bubble chat-bubble--${message.type} ${!message.isComplete ? 'chat-bubble--streaming' : ''}`}>
+                {message.type === 'bot' && message.text === '' && !message.isComplete ? (
+                  <div className="chat-typing-dots">
+                    <span className="typing-dot"></span>
+                    <span className="typing-dot"></span>
+                    <span className="typing-dot"></span>
+                  </div>
+                ) : (
+                  <>
+                    <p className="chat-bubble__text">{formatMessageText(message.text)}</p>
+                    {!message.isComplete && (
+                      <span className="chat-streaming-cursor">▍</span>
+                    )}
+                  </>
+                )}
+              </div>
+              {/* Application Cards injected after bot messages */}
+              {message.type === 'bot' && message.isComplete && message.detectedServices && message.detectedServices.length > 0 && (
+                <div className="chat-app-cards" id={`app-cards-${message.id}`}>
+                  {message.detectedServices.map((svcId) => (
+                    <ApplicationCard key={svcId} serviceId={svcId} />
+                  ))}
                 </div>
-              ) : (
-                <>
-                  <p className="chat-bubble__text">{formatMessageText(message.text)}</p>
-                  {!message.isComplete && (
-                    <span className="chat-streaming-cursor">▍</span>
-                  )}
-                </>
               )}
             </div>
           </div>

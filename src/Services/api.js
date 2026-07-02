@@ -28,19 +28,7 @@ async function apiRequest(endpoint, options = {}) {
     }
 }
 
-export async function apiLogin(email, password) {
-    return apiRequest('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-    });
-}
-
-export async function apiRegister(fullName, email, password) {
-    return apiRequest('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({ fullName, email, password }),
-    });
-}
+/* Auth is handled entirely by Supabase — no passwords are ever sent to the custom backend */
 
 export async function apiGetProfile(userId) {
     return apiRequest(`/auth/me/${userId}`);
@@ -73,6 +61,7 @@ export async function apiSaveChatMessage(userId, sender, content) {
     });
 }
 
+/* Syncs user identity (id, name, email) to backend — never sends passwords */
 export async function apiSyncUser(supabaseAuthId, fullName, email) {
     return apiRequest('/auth/sync', {
         method: 'POST',

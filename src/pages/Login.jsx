@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, MessageCircle, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
 
@@ -33,12 +33,27 @@ const Login = () => {
     setError('');
   };
 
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const trimmedEmail = formData.email.trim().toLowerCase();
+    if (!validateEmail(trimmedEmail)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     try {
-      await auth.login({ email: formData.email, password: formData.password });
+      await auth.login({ email: trimmedEmail, password: formData.password });
       setIsLoading(false);
       navigate('/');
     } catch (err) {
@@ -67,16 +82,16 @@ const Login = () => {
           <div className="auth-bg__tagline">
             <h2 className="auth-bg__tagline-title">
               Your gateway to seamless<br />
-              <span className="auth-bg__highlight">government services</span>
+              <span className="auth-bg__highlight">business permit services</span>
             </h2>
             <p className="auth-bg__tagline-text">
-              Access government services, track applications, and get AI-powered assistance — all in one place.
+              Apply for business permits, track your applications, and get AI-powered assistance — all in one secure platform.
             </p>
           </div>
           <div className="auth-bg__stats">
             <div className="auth-bg__stat">
-              <span className="auth-bg__stat-value">50+</span>
-              <span className="auth-bg__stat-label">Services</span>
+              <span className="auth-bg__stat-value">53</span>
+              <span className="auth-bg__stat-label">Municipalities</span>
             </div>
             <div className="auth-bg__stat-divider" />
             <div className="auth-bg__stat">
@@ -86,7 +101,7 @@ const Login = () => {
             <div className="auth-bg__stat-divider" />
             <div className="auth-bg__stat">
               <span className="auth-bg__stat-value">100%</span>
-              <span className="auth-bg__stat-label">Free</span>
+              <span className="auth-bg__stat-label">Secure</span>
             </div>
           </div>
         </div>
@@ -129,6 +144,7 @@ const Login = () => {
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleChange}
+                  autoComplete="email"
                   required
                 />
               </div>
@@ -151,6 +167,7 @@ const Login = () => {
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleChange}
+                  autoComplete="current-password"
                   required
                 />
                 <button
@@ -194,6 +211,11 @@ const Login = () => {
               )}
             </button>
           </form>
+
+          <div className="auth-privacy-notice" id="login-privacy-notice">
+            <Shield size={14} />
+            <span>Your credentials are encrypted and securely handled. We never store your password in plain text.</span>
+          </div>
 
           <div className="auth-divider">
             <span className="auth-divider__text">or</span>

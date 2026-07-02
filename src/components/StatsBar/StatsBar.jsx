@@ -1,25 +1,25 @@
-import { TrendingUp, Star, Users, Zap } from 'lucide-react';
+import { TrendingUp, Star, MapPin, Zap } from 'lucide-react';
 
 const StatsBar = () => {
   const stats = [
     {
       icon: TrendingUp,
-      value: '1.2M+',
-      label: 'Applications Processed',
+      value: '12K+',
+      label: 'Permits Processed',
     },
     {
       icon: Star,
-      value: '98.2%',
-      label: 'Citizen Satisfaction',
+      value: '96.5%',
+      label: 'Approval Rate',
     },
     {
-      icon: Users,
-      value: '45K+',
-      label: 'Active Users',
+      icon: MapPin,
+      value: '53',
+      label: 'Cebu Municipalities',
     },
     {
       icon: Zap,
-      value: '4.2 days',
+      value: '3 days',
       label: 'Avg. Processing',
     },
   ];

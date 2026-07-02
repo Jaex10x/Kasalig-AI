@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Settings from './pages/Settings';
 import TrackApplication from './pages/TrackApplication';
+import ApplicationForm from './pages/ApplicationForm';
 import './index.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/track" element={<TrackApplication />} />
+          <Route path="/apply/:serviceId" element={<ApplicationForm />} />
         </Routes>
       </Router>
     </AuthProvider>
