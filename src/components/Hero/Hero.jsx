@@ -10,13 +10,13 @@ const Hero = () => {
       </div>
 
       <h1 className="hero__title">
-        Business Permits,
+        Government Requirements,
         <br />
         <span className="hero__title-highlight">Made Simple.</span>
       </h1>
 
       <p className="hero__description">
-        Kasalig AI guides every Filipino through business permit applications across all
+        Kasalig AI guides every Filipino through gogitvernment requirements across all
         municipalities in the Province of Cebu — all in one intelligent platform.
       </p>
 
