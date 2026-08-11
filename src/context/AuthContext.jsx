@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../config/supabaseClient';
-import { apiSyncUser } from '../Services/api';
+import { apiSyncUser, apiUpdateProfile } from '../Services/api';
+import { initializeApp } from "firebase/app";
+import { getMessaging, getToken } from "firebase/messaging";
+import { getAnalytics } from "firebase/analytics";
 
 const AuthContext = createContext(null);
 
@@ -12,20 +15,92 @@ const sanitizeInput = (str) => {
     .trim();
 };
 
+// Firebase configuration for Push Notifications
+const firebaseConfig = {
+   apiKey: "AIzaSyCSkQEZsuG1rICUG6vjS3HuBQKeJz_e7dY",
+  authDomain: "kasalig-ai.firebaseapp.com",
+  projectId: "kasalig-ai",
+  storageBucket: "kasalig-ai.firebasestorage.app",
+  messagingSenderId: "595087082733",
+  appId: "1:595087082733:web:d378e1f2c93ece670938e4",
+  measurementId: "G-M3LP7QXZ3V"
+};
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+let messaging = null;
+try {
+  // Only initialize on client-side and if browser supports notifications
+  if (typeof window !== 'undefined' && 'Notification' in window) {
+    const app = initializeApp(firebaseConfig);
+    messaging = getMessaging(app);
+  }
+} catch (err) {
+  console.warn("Firebase Messaging initialization failed:", err.message);
+}
+
+// Request permission and get FCM token, then update user profile in backend
+export const requestForToken = async (userId) => {
+  if (!messaging) {
+    console.warn("FCM Messaging is not supported or initialized in this browser");
+    return;
+  }
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const token = await getToken(messaging, {
+        vapidKey: 'YOUR_VAPID_KEY_FROM_FIREBASE_CONSOLE'
+      });
+      if (token) {
+        console.log('FCM Token generated:', token);
+        await apiUpdateProfile(userId, { fcmToken: token });
+      }
+    }
+  } catch (error) {
+    console.error('An error occurred while retrieving FCM token:', error);
+  }
+};
+
+
 const defaultNotifications = [
   {
     id: 1,
+    title: 'Document Ready for Pickup',
+    message: 'Your Business Permit (KSL-2026-00213) is now ready for pickup at Cebu City Hall.',
+    time: '1 hour ago',
+    read: false,
+    type: 'ready',
+  },
+  {
+    id: 2,
+    title: 'Renewal Needed',
+    message: 'Your Business Permit (KSL-2025-01847) is expiring on September 15, 2026. Please renew it before the deadline to avoid penalties.',
+    time: '5 hours ago',
+    read: false,
+    type: 'renewal',
+  },
+  {
+    id: 3,
+    title: 'Document Expired',
+    message: 'Your Business Permit (KSL-2024-00542) expired on July 31, 2026. Please submit a new application to renew.',
+    time: '2 days ago',
+    read: false,
+    type: 'expired',
+  },
+  {
+    id: 4,
     title: 'Business Permit Update',
     message: 'Your business permit application has moved to "Under Review" status.',
-    time: '2 hours ago',
+    time: '3 days ago',
     read: false,
     type: 'update',
   },
   {
-    id: 2,
+    id: 5,
     title: 'Welcome to Kasalig AI!',
     message: 'Thank you for joining. Apply for your business permit today.',
-    time: '3 days ago',
+    time: '1 week ago',
     read: true,
     type: 'info',
   },
@@ -130,6 +205,16 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  // Request FCM Push Notification token automatically upon successful login
+  useEffect(() => {
+    if (user && !user.id?.toString().startsWith('mock-')) {
+      const userId = user.dbId || user.id;
+      if (userId) {
+        requestForToken(userId);
+      }
+    }
+  }, [user]);
+
   const handleLocalMockRegister = (sanitizedName, sanitizedEmail) => {
     const mockUser = {
       id: `mock-user-${Date.now()}`,
@@ -230,7 +315,20 @@ export const AuthProvider = ({ children }) => {
     });
     if (error) throw error;
     if (data?.user) {
-      setUser(mapSupabaseUser(data.user));
+      const dbId = user?.dbId;
+      if (dbId) {
+        try {
+          await apiUpdateProfile(dbId, {
+            fullName: sanitizeInput(updatedData.name),
+            email: data.user.email,
+            phoneNumber: sanitizeInput(updatedData.contactNumber),
+            address: sanitizeInput(updatedData.address)
+          });
+        } catch (err) {
+          console.warn("Failed to sync profile update to backend:", err.message);
+        }
+      }
+      setUser(mapSupabaseUser(data.user, dbId));
     }
   };
 

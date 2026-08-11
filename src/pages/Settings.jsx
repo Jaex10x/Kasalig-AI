@@ -252,6 +252,7 @@ const Settings = () => {
                           placeholder="e.g. 09171234567"
                         />
                       </div>
+                      <span className="settings-field__hint">SMS notifications for document status (ready, renewal, expired) will be sent to this number.</span>
                     </div>
 
                     <div className="settings-field settings-field--full">

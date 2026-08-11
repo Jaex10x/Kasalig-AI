@@ -475,6 +475,14 @@ img {
   background: var(--color-gold-500);
 }
 
+.navbar-notif__dot--orange {
+  background: #f97316;
+}
+
+.navbar-notif__dot--red {
+  background: #ef4444;
+}
+
 .navbar-notif-item__content {
   flex: 1;
   min-width: 0;
@@ -3829,6 +3837,13 @@ overflow: hidden;
 
 .settings-field--full {
   grid-column: span 2;
+}
+
+.settings-field__hint {
+  font-size: 0.7rem;
+  color: var(--color-gray-400);
+  line-height: 1.4;
+  margin-top: -2px;
 }
 
 .settings-label {

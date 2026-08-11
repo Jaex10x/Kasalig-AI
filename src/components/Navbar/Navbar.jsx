@@ -69,6 +69,8 @@ const Navbar = () => {
       case 'ready': return 'navbar-notif__dot--green';
       case 'update': return 'navbar-notif__dot--blue';
       case 'info': return 'navbar-notif__dot--gold';
+      case 'renewal': return 'navbar-notif__dot--orange';
+      case 'expired': return 'navbar-notif__dot--red';
       default: return 'navbar-notif__dot--blue';
     }
   };
@@ -116,10 +118,6 @@ const Navbar = () => {
             id="notification-btn"
             aria-label="Notifications"
             onClick={() => {
-              if (!isAuthenticated) {
-                navigate('/login');
-                return;
-              }
               setShowNotifications(!showNotifications);
               setShowUserMenu(false);
             }}
@@ -131,7 +129,7 @@ const Navbar = () => {
           </button>
 
 
-          {showNotifications && isAuthenticated && (
+          {showNotifications && (
             <div className="navbar-notif-dropdown" id="notification-dropdown">
               <div className="navbar-notif-dropdown__header">
                 <h4 className="navbar-notif-dropdown__title">Notifications</h4>

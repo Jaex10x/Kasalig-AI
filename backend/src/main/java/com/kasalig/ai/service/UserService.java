@@ -41,11 +41,13 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public User updateUser(Long id, String fullName, String email) {
+    public User updateUser(Long id, String fullName, String email, String phoneNumber, String fcmToken) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         if (fullName != null) user.setFullName(fullName);
         if (email != null) user.setEmail(email);
+        if (phoneNumber != null) user.setPhoneNumber(phoneNumber);
+        if (fcmToken != null) user.setFcmToken(fcmToken);
         return userRepository.save(user);
     }
 

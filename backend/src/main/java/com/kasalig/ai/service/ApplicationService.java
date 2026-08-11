@@ -22,4 +22,8 @@ public class ApplicationService {
     public Optional<Application> getApplicationById(String id) {
         return applicationRepository.findById(id);
     }
+
+    public Application saveApplication(Application application) {
+        return applicationRepository.save(application);
+    }
 }

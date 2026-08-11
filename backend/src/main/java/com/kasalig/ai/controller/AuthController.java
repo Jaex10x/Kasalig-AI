@@ -88,11 +88,19 @@ public class AuthController {
     @PutMapping("/me/{id}")
     public ResponseEntity<?> updateProfile(@PathVariable Long id, @RequestBody Map<String, String> updates) {
         try {
-            User user = userService.updateUser(id, updates.get("fullName"), updates.get("email"));
+            User user = userService.updateUser(
+                    id, 
+                    updates.get("fullName"), 
+                    updates.get("email"),
+                    updates.get("phoneNumber"),
+                    updates.get("fcmToken")
+            );
             return ResponseEntity.ok(Map.of(
                     "id", user.getId(),
                     "fullName", user.getFullName(),
                     "email", user.getEmail(),
+                    "phoneNumber", user.getPhoneNumber() != null ? user.getPhoneNumber() : "",
+                    "fcmToken", user.getFcmToken() != null ? user.getFcmToken() : "",
                     "message", "Profile updated"
             ));
         } catch (RuntimeException e) {
