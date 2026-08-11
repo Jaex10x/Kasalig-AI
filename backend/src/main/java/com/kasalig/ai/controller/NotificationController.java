@@ -43,28 +43,30 @@ public class NotificationController {
         }
 
         String token = user.getFcmToken();
-        if (token == null || token.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "User has no FCM registration token"));
+        String phone = user.getPhoneNumber();
+
+        if ((token == null || token.isBlank()) && (phone == null || phone.isBlank())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "User has neither FCM token nor phone number"));
         }
 
         boolean sent;
         switch (request.getType()) {
             case "ready":
-                sent = notificationService.sendReadyNotification(token, app.getTitle(), app.getId(), "Municipality Office");
+                sent = notificationService.sendReadyNotification(token, phone, app.getTitle(), app.getId(), "Municipality Office");
                 break;
             case "renewal":
                 String expiryDate = request.getExpiryDate() != null ? request.getExpiryDate() : app.getEstimatedDate();
-                sent = notificationService.sendRenewalNotification(token, app.getTitle(), app.getId(), expiryDate);
+                sent = notificationService.sendRenewalNotification(token, phone, app.getTitle(), app.getId(), expiryDate);
                 break;
             case "expired":
-                sent = notificationService.sendExpiredNotification(token, app.getTitle(), app.getId());
+                sent = notificationService.sendExpiredNotification(token, phone, app.getTitle(), app.getId());
                 break;
             default:
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid type. Must be: ready, renewal, or expired"));
         }
 
         if (sent) {
-            return ResponseEntity.ok(Map.of("message", "Push notification sent successfully", "token", token));
+            return ResponseEntity.ok(Map.of("message", "SMS / Push notification sent successfully", "token", token != null ? token : "", "phoneNumber", phone != null ? phone : ""));
         } else {
             return ResponseEntity.internalServerError().body(Map.of("error", "Failed to send notification. Check server logs."));
         }

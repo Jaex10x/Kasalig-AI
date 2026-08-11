@@ -49,34 +49,36 @@ public class ApplicationController {
             app.setStatusType(request.getStatusType());
             applicationService.saveApplication(app);
 
-            // Send Push Notification if requested
+            // Send Notification (SMS and/or Push) if requested
             if (request.isSendSms()) {
                 User user = app.getUser();
-                if (user != null && user.getFcmToken() != null && !user.getFcmToken().isBlank()) {
-                    String token = user.getFcmToken();
+                String token = (user != null) ? user.getFcmToken() : null;
+                String phone = (user != null) ? user.getPhoneNumber() : null;
+
+                if ((token != null && !token.isBlank()) || (phone != null && !phone.isBlank())) {
                     boolean sent = false;
 
                     switch (request.getStatusType()) {
                         case "ready":
-                            sent = notificationService.sendReadyNotification(token, app.getTitle(), app.getId(), "Municipality Office");
+                            sent = notificationService.sendReadyNotification(token, phone, app.getTitle(), app.getId(), "Municipality Office");
                             break;
                         case "renewal":
                             String expiryDate = request.getExpiryDate() != null ? request.getExpiryDate() : app.getEstimatedDate();
-                            sent = notificationService.sendRenewalNotification(token, app.getTitle(), app.getId(), expiryDate);
+                            sent = notificationService.sendRenewalNotification(token, phone, app.getTitle(), app.getId(), expiryDate);
                             break;
                         case "expired":
-                            sent = notificationService.sendExpiredNotification(token, app.getTitle(), app.getId());
+                            sent = notificationService.sendExpiredNotification(token, phone, app.getTitle(), app.getId());
                             break;
                     }
 
                     return ResponseEntity.ok(Map.of(
-                        "message", "Status updated" + (sent ? " and Push notification sent" : " (Push notification failed)"),
-                        "pushSent", sent
+                        "message", "Status updated" + (sent ? " and SMS/Push notification sent" : " (notification failed)"),
+                        "notificationSent", sent
                     ));
                 } else {
                     return ResponseEntity.ok(Map.of(
-                        "message", "Status updated (no FCM token — notification skipped)",
-                        "pushSent", false
+                        "message", "Status updated (no phone number or FCM token — notification skipped)",
+                        "notificationSent", false
                     ));
                 }
             }

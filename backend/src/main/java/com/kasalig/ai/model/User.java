@@ -53,14 +53,6 @@ public class User {
         this.password = password;
     }
 
-    // Constructor for Supabase Auth sync (no password needed)
-    public User(String supabaseAuthId, String fullName, String email) {
-        this.supabaseAuthId = supabaseAuthId;
-        this.fullName = fullName;
-        this.email = email;
-        this.password = "SUPABASE_AUTH"; // Placeholder — auth handled by Supabase
-    }
-
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

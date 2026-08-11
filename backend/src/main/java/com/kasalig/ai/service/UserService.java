@@ -76,7 +76,11 @@ public class UserService {
         }
 
         // Create new user linked to Supabase Auth
-        User newUser = new User(supabaseAuthId, fullName, email);
+        User newUser = new User();
+        newUser.setSupabaseAuthId(supabaseAuthId);
+        newUser.setFullName(fullName);
+        newUser.setEmail(email);
+        newUser.setPassword("SUPABASE_AUTH");
         return userRepository.save(newUser);
     }
 }
