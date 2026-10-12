@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { askGeminiStream, resetConversation } from '../Services/gemini';
 import ApplicationCard from '../components/ApplicationCard/ApplicationCard';
 
-/* Maps keywords in AI responses to service IDs */
+
 const SERVICE_KEYWORDS = [
   { keywords: ['business registration', 'dti registration', 'register your business', 'register a business', 'business permit', 'permit'], serviceId: 'business-permit' },
   { keywords: ['civil registry', 'clerical correction', 'spelling correction', 'birth certificate correction', 'marriage certificate correction', 'registry correction', 'correction'], serviceId: 'civil-registry-corrections' },
@@ -18,10 +18,7 @@ const APPLICATION_TRIGGERS = [
   'you need to', 'to get your', 'to obtain', 'to request',
 ];
 
-/**
- * Detect which service the bot is talking about and whether it's suggesting the user apply.
- * Returns an array of serviceIds to show cards for.
- */
+
 const detectApplicationIntent = (text) => {
   const lower = text.toLowerCase();
   const hasTrigger = APPLICATION_TRIGGERS.some((t) => lower.includes(t));

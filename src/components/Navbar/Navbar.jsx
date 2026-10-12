@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import {
-  Home,
-  FileText,
-  HelpCircle,
   Bell,
   ChevronDown,
   MessageCircle,
   User,
   Settings,
   LogOut,
-  Check,
   CheckCheck,
+  Phone,
+  MapPin,
+  Clock,
+  ArrowRight,
+  Menu,
+  X,
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -22,6 +24,7 @@ const Navbar = () => {
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const notifRef = useRef(null);
   const userRef = useRef(null);
@@ -39,10 +42,17 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   const navLinks = [
-    { id: 'home', label: 'Home', icon: Home, path: '/' },
-    { id: 'applications', label: 'My Applications', icon: FileText, path: '/track' },
-    { id: 'help', label: 'Help & FAQ', icon: HelpCircle, path: '/help' },
+    { id: 'home', label: 'Home', path: '/' },
+    { id: 'about', label: 'About', path: '/#about', isAnchor: true },
+    { id: 'services', label: 'Services', path: '/#services-section', isAnchor: true },
+    { id: 'applications', label: 'My Applications', path: '/track' },
+    { id: 'help', label: 'Help & FAQ', path: '/help' },
   ];
 
   const getActiveLink = () => {
@@ -79,180 +89,256 @@ const Navbar = () => {
   const displayInitials = isAuthenticated ? user.initials : 'G';
 
   return (
-    <nav className="navbar" id="main-navbar">
-      <div className="navbar__brand">
-        <Link to="/" className="navbar__logo">
-          <img src="/logo.png" alt="Kasalig AI" width={40} />
-        </Link>
-        <div className="navbar__brand-info">
-          <Link to="/" className="navbar__brand-name">
-            Kasalig
-            <span className="navbar__badge">BETA</span>
-          </Link>
-          <span className="navbar__brand-subtitle">Government Services AI</span>
+    <header className="header-wrapper" id="main-header">
+      {/* Top Bar matching NoterX */}
+      <div className="top-bar">
+        <div className="top-bar__container">
+          <div className="top-bar__left">
+            <a href="tel:0328882328" className="top-bar__link">
+              <Phone size={13} className="top-bar__icon" />
+              <span>(032) 888-2328</span>
+            </a>
+            <span className="top-bar__divider"></span>
+            <span className="top-bar__text">
+              <MapPin size={13} className="top-bar__icon" />
+              <span>Cebu Provincial Capitol, Escario St., Cebu City</span>
+            </span>
+          </div>
+          <div className="top-bar__right">
+            <span className="top-bar__text">
+              <Clock size={13} className="top-bar__icon" />
+              <span>Monday – Friday: 8:00 AM – 5:00 PM</span>
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="navbar__nav">
-        {navLinks.map((link) => {
-          const Icon = link.icon;
-          return (
-            <Link
-              key={link.id}
-              to={link.path}
-              className={`navbar__link ${activeLink === link.id ? 'navbar__link--active' : ''}`}
-              id={`nav-link-${link.id}`}
-            >
-              <Icon size={16} className="navbar__link-icon" />
-              {link.label}
+      {/* Main Navbar */}
+      <nav className="navbar" id="main-navbar">
+        <div className="navbar__container">
+          {/* Logo / Brand */}
+          <div className="navbar__brand">
+            <Link to="/" className="navbar__logo">
+              <span className="brand-title">Kasalig</span>
+              <span className="brand-tag">AI</span>
             </Link>
-          );
-        })}
-      </div>
+          </div>
 
-      <div className="navbar__actions">
-
-        <div className="navbar-dropdown-anchor" ref={notifRef}>
-          <button
-            className="navbar__notification"
-            id="notification-btn"
-            aria-label="Notifications"
-            onClick={() => {
-              setShowNotifications(!showNotifications);
-              setShowUserMenu(false);
-            }}
-          >
-            <Bell size={18} />
-            {isAuthenticated && unreadCount > 0 && (
-              <span className="navbar__notification-badge">{unreadCount}</span>
-            )}
-          </button>
-
-
-          {showNotifications && (
-            <div className="navbar-notif-dropdown" id="notification-dropdown">
-              <div className="navbar-notif-dropdown__header">
-                <h4 className="navbar-notif-dropdown__title">Notifications</h4>
-                {unreadCount > 0 && (
-                  <button
-                    className="navbar-notif-dropdown__mark-all"
-                    onClick={markAllRead}
-                    id="mark-all-read-btn"
+          {/* Desktop Navigation Links */}
+          <div className="navbar__nav">
+            {navLinks.map((link) => {
+              if (link.isAnchor && location.pathname === '/') {
+                return (
+                  <a
+                    key={link.id}
+                    href={link.path.replace('/', '')}
+                    className="navbar__link"
+                    id={`nav-link-${link.id}`}
                   >
-                    <CheckCheck size={14} />
-                    Mark all read
-                  </button>
-                )}
-              </div>
-
-              <div className="navbar-notif-dropdown__list">
-                {notifications.length === 0 ? (
-                  <div className="navbar-notif-dropdown__empty">
-                    <Bell size={24} />
-                    <p>No notifications yet</p>
-                  </div>
-                ) : (
-                  notifications.map((notif) => (
-                    <button
-                      key={notif.id}
-                      className={`navbar-notif-item ${!notif.read ? 'navbar-notif-item--unread' : ''}`}
-                      onClick={() => handleNotificationClick(notif)}
-                      id={`notif-${notif.id}`}
-                    >
-                      <div className={`navbar-notif__dot ${getNotifTypeDot(notif.type)}`} />
-                      <div className="navbar-notif-item__content">
-                        <span className="navbar-notif-item__title">{notif.title}</span>
-                        <span className="navbar-notif-item__message">{notif.message}</span>
-                        <span className="navbar-notif-item__time">{notif.time}</span>
-                      </div>
-                      {!notif.read && (
-                        <div className="navbar-notif-item__unread-dot" />
-                      )}
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-
-        <div className="navbar-dropdown-anchor" ref={userRef}>
-          {isAuthenticated ? (
-            <div
-              className="navbar__user"
-              id="user-menu"
-              onClick={() => {
-                setShowUserMenu(!showUserMenu);
-                setShowNotifications(false);
-              }}
-            >
-              <div className="navbar__avatar">{displayInitials}</div>
-              <span className="navbar__user-name">{displayName}</span>
-              <ChevronDown
-                size={14}
-                className={`navbar__user-chevron ${showUserMenu ? 'navbar__user-chevron--open' : ''}`}
-              />
-            </div>
-          ) : (
-            <Link to="/login" className="navbar__login-btn" id="nav-login-btn">
-              Sign In
-            </Link>
-          )}
-
-
-          {showUserMenu && isAuthenticated && (
-            <div className="navbar-user-dropdown" id="user-dropdown">
-              <div className="navbar-user-dropdown__header">
-                <div className="navbar-user-dropdown__avatar">{displayInitials}</div>
-                <div className="navbar-user-dropdown__info">
-                  <span className="navbar-user-dropdown__name">{user.name}</span>
-                  <span className="navbar-user-dropdown__email">{user.email}</span>
-                </div>
-              </div>
-
-              <div className="navbar-user-dropdown__divider" />
-
-              <div className="navbar-user-dropdown__menu">
-                <button
-                  className="navbar-user-dropdown__item"
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    navigate('/settings');
-                  }}
-                  id="user-menu-profile"
+                    {link.label}
+                  </a>
+                );
+              }
+              return (
+                <Link
+                  key={link.id}
+                  to={link.path}
+                  className={`navbar__link ${activeLink === link.id ? 'navbar__link--active' : ''}`}
+                  id={`nav-link-${link.id}`}
                 >
-                  <User size={16} />
-                  Profile
-                </button>
-                <button
-                  className="navbar-user-dropdown__item"
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    navigate('/settings');
-                  }}
-                  id="user-menu-settings"
-                >
-                  <Settings size={16} />
-                  Settings
-                </button>
-              </div>
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
 
-              <div className="navbar-user-dropdown__divider" />
-
+          {/* Actions: Notifications, User, and Pill CTA */}
+          <div className="navbar__actions">
+            {/* Notification Dropdown Anchor */}
+            <div className="navbar-dropdown-anchor" ref={notifRef}>
               <button
-                className="navbar-user-dropdown__item navbar-user-dropdown__item--danger"
-                onClick={handleLogout}
-                id="user-menu-logout"
+                className="navbar__notification"
+                id="notification-btn"
+                aria-label="Notifications"
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  setShowUserMenu(false);
+                }}
               >
-                <LogOut size={16} />
-                Log out
+                <Bell size={18} />
+                {isAuthenticated && unreadCount > 0 && (
+                  <span className="navbar__notification-badge">{unreadCount}</span>
+                )}
               </button>
+
+              {showNotifications && (
+                <div className="navbar-notif-dropdown" id="notification-dropdown">
+                  <div className="navbar-notif-dropdown__header">
+                    <h4 className="navbar-notif-dropdown__title">Notifications</h4>
+                    {unreadCount > 0 && (
+                      <button
+                        className="navbar-notif-dropdown__mark-all"
+                        onClick={markAllRead}
+                        id="mark-all-read-btn"
+                      >
+                        <CheckCheck size={14} />
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="navbar-notif-dropdown__list">
+                    {notifications.length === 0 ? (
+                      <div className="navbar-notif-dropdown__empty">
+                        <Bell size={24} />
+                        <p>No notifications yet</p>
+                      </div>
+                    ) : (
+                      notifications.map((notif) => (
+                        <button
+                          key={notif.id}
+                          className={`navbar-notif-item ${!notif.read ? 'navbar-notif-item--unread' : ''}`}
+                          onClick={() => handleNotificationClick(notif)}
+                          id={`notif-${notif.id}`}
+                        >
+                          <div className={`navbar-notif__dot ${getNotifTypeDot(notif.type)}`} />
+                          <div className="navbar-notif-item__content">
+                            <span className="navbar-notif-item__title">{notif.title}</span>
+                            <span className="navbar-notif-item__message">{notif.message}</span>
+                            <span className="navbar-notif-item__time">{notif.time}</span>
+                          </div>
+                          {!notif.read && <div className="navbar-notif-item__unread-dot" />}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* User Dropdown Anchor */}
+            <div className="navbar-dropdown-anchor" ref={userRef}>
+              {isAuthenticated ? (
+                <div
+                  className="navbar__user"
+                  id="user-menu"
+                  onClick={() => {
+                    setShowUserMenu(!showUserMenu);
+                    setShowNotifications(false);
+                  }}
+                >
+                  <div className="navbar__avatar">{displayInitials}</div>
+                  <span className="navbar__user-name">{displayName}</span>
+                  <ChevronDown
+                    size={14}
+                    className={`navbar__user-chevron ${showUserMenu ? 'navbar__user-chevron--open' : ''}`}
+                  />
+                </div>
+              ) : (
+                <Link to="/login" className="navbar__login-link" id="nav-login-btn">
+                  Sign In
+                </Link>
+              )}
+
+              {showUserMenu && isAuthenticated && (
+                <div className="navbar-user-dropdown" id="user-dropdown">
+                  <div className="navbar-user-dropdown__header">
+                    <div className="navbar-user-dropdown__avatar">{displayInitials}</div>
+                    <div className="navbar-user-dropdown__info">
+                      <span className="navbar-user-dropdown__name">{user.name}</span>
+                      <span className="navbar-user-dropdown__email">{user.email}</span>
+                    </div>
+                  </div>
+
+                  <div className="navbar-user-dropdown__divider" />
+
+                  <div className="navbar-user-dropdown__menu">
+                    <button
+                      className="navbar-user-dropdown__item"
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        navigate('/settings');
+                      }}
+                      id="user-menu-profile"
+                    >
+                      <User size={16} />
+                      Profile
+                    </button>
+                    <button
+                      className="navbar-user-dropdown__item"
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        navigate('/settings');
+                      }}
+                      id="user-menu-settings"
+                    >
+                      <Settings size={16} />
+                      Settings
+                    </button>
+                  </div>
+
+                  <div className="navbar-user-dropdown__divider" />
+
+                  <button
+                    className="navbar-user-dropdown__item navbar-user-dropdown__item--danger"
+                    onClick={handleLogout}
+                    id="user-menu-logout"
+                  >
+                    <LogOut size={16} />
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* NoterX Signature Pill CTA Button */}
+            <Link to="/chat" className="btn-noterx-primary btn-noterx-nav" id="nav-chat-cta">
+              <MessageCircle size={15} />
+              <span>Chat with Kasalig</span>
+              <ArrowRight size={14} className="btn-arrow" />
+            </Link>
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              className="navbar__mobile-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </div>
-      </div>
-    </nav>
+
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="navbar__mobile-menu">
+            <div className="navbar__mobile-links">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.id}
+                  to={link.path}
+                  className={`navbar__mobile-link ${activeLink === link.id ? 'active' : ''}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div className="navbar__mobile-cta-wrap">
+                <Link
+                  to="/chat"
+                  className="btn-noterx-primary full-width"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <MessageCircle size={16} />
+                  <span>Chat with Kasalig AI</span>
+                  <ArrowRight size={15} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
+    </header>
   );
 };
 

@@ -17,7 +17,7 @@ const sanitizeInput = (str) => {
 
 // Firebase configuration for Push Notifications
 const firebaseConfig = {
-  apiKey: "[GCP_API_KEY]",
+  apiKey: "AIzaSyCSkQEZsuG1rICUG6vjS3HuBQKeJz_e7dY",
   authDomain: "kasalig-ai.firebaseapp.com",
   projectId: "kasalig-ai",
   storageBucket: "kasalig-ai.firebasestorage.app",
