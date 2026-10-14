@@ -1,23 +1,21 @@
 import { useState } from 'react';
-import { MessageCircle, ArrowRight, ShieldCheck, CheckCircle2, FileCheck, Camera } from 'lucide-react';
+import { MessageCircle, ArrowRight, ShieldCheck, CheckCircle2, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Hero = () => {
-  // Automatically loads real image when placed at public/images/hero.jpg
-  // Displays an elegant placeholder container if not yet present
-  const [hasRealImage, setHasRealImage] = useState(false);
+  const [hasRealImage, setHasRealImage] = useState(true);
 
   return (
     <section className="hero-noterx" id="hero-section">
       <div className="section-container">
         <div className="hero-grid">
-          {/* Left Column: Rounded Real Photo or Clean Placeholder */}
+          {}
           <div className="hero-image-col">
             <div className="hero-image-card">
               {hasRealImage ? (
                 <img
                   src="/images/hero.jpg"
-                  alt="Kasalig AI Cebu Public Service Advisory"
+                  alt="Hon. Nestor Archival - Kasalig AI Cebu Public Service"
                   className="hero-main-img"
                   onError={() => setHasRealImage(false)}
                 />
@@ -32,7 +30,7 @@ const Hero = () => {
                     <br />
                     <code>public/images/hero.jpg</code>
                   </p>
-                  {/* Invisible preloader to auto-detect when user puts real image */}
+                  {}
                   <img
                     src="/images/hero.jpg"
                     alt=""
@@ -42,16 +40,6 @@ const Hero = () => {
                   />
                 </div>
               )}
-
-              <div className="hero-floating-card">
-                <div className="floating-card-icon">
-                  <FileCheck size={20} />
-                </div>
-                <div className="floating-card-text">
-                  <span className="floating-card-title">Business & Civil Registry</span>
-                  <span className="floating-card-desc">Verified for all 53 LGUs</span>
-                </div>
-              </div>
             </div>
           </div>
 
