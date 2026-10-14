@@ -3,7 +3,7 @@ import { CheckCircle2, ArrowRight, Building2, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AboutSection = () => {
-  const [hasRealAboutImage, setHasRealAboutImage] = useState(false);
+  const [capitolImgError, setCapitolImgError] = useState(false);
 
   const checklist = [
     'Guided requirements for RA 9048 & RA 10172 clerical corrections',
@@ -24,21 +24,21 @@ const AboutSection = () => {
               <div className="about-image-card about-image-card--top">
                 <img
                   src="/city-hall.jpg"
-                  alt="Cebu City Hall & Provincial Administration"
+                  alt="Cebu City Hall"
                   className="about-img"
                   loading="lazy"
                 />
               </div>
 
-              {/* Second Card: Real Photo Slot or Civic Administration Card */}
+              {/* Second Card: Cebu Provincial Capitol Photo */}
               <div className="about-image-card about-image-card--bottom">
-                {hasRealAboutImage ? (
+                {!capitolImgError ? (
                   <img
-                    src="/images/about.jpg"
-                    alt="Citizen Consultation and Advisory"
+                    src="/capitol.jpg"
+                    alt="Cebu Provincial Capitol"
                     className="about-img"
                     loading="lazy"
-                    onError={() => setHasRealAboutImage(false)}
+                    onError={() => setCapitolImgError(true)}
                   />
                 ) : (
                   <div className="about-civic-card">
@@ -52,14 +52,6 @@ const AboutSection = () => {
                       </span>
                       <span className="civic-card-note">53 Municipal LGUs Integrated</span>
                     </div>
-                    {/* Invisible detector for optional real about image */}
-                    <img
-                      src="/images/about.jpg"
-                      alt=""
-                      style={{ display: 'none' }}
-                      onLoad={() => setHasRealAboutImage(true)}
-                      onError={() => setHasRealAboutImage(false)}
-                    />
                   </div>
                 )}
                 <div className="about-badge-float">
