@@ -2,21 +2,27 @@ package com.Kasalig.Kasalig_bAI.repository;
 
 public class QueueResponse {
     private Long queueId;
+    private String user_id;
     private String full_name;
     private String email;
     private String contact_number;
     private String service_type;
-    private String location_type; // "BARANGAY" or "HALL"
+    private String location_type;
     private String location_name;
     private String date;
     private String time;
     private String additional_details;
-    private String status; // WAITING, SERVING, COMPLETED, CANCELLED
-    private String assigned_to_hall; // Optional: which hall is serving this (only for BARANGAY)
+    private String status;
+    private String assigned_to_hall;
 
-    // Getters and Setters
     public Long getQueueId() { return queueId; }
     public void setQueueId(Long queueId) { this.queueId = queueId; }
+
+    public String getUser_id() { return user_id; }
+    public void setUser_id(String user_id) { this.user_id = user_id; }
+
+    public String getUserId() { return user_id; }
+    public void setUserId(String userId) { this.user_id = userId; }
 
     public String getFull_name() { return full_name; }
     public void setFull_name(String full_name) { this.full_name = full_name; }

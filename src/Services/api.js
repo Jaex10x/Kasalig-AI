@@ -68,3 +68,46 @@ export async function apiSyncUser(supabaseAuthId, fullName, email) {
         body: JSON.stringify({ supabaseAuthId, fullName, email }),
     });
 }
+
+/* =========================================================================
+   Queue Management Endpoints
+   ========================================================================= */
+
+// POST http://localhost:8080/api/queue (or /api/queue/create)
+export async function apiCreateQueue(queueData) {
+    return apiRequest('/queue', {
+        method: 'POST',
+        body: JSON.stringify(queueData),
+    });
+}
+
+// GET http://localhost:8080/api/queue (or /api/queue?status=WAITING)
+export async function apiGetQueues(status = null) {
+    const endpoint = status ? `/queue?status=${encodeURIComponent(status)}` : '/queue';
+    return apiRequest(endpoint);
+}
+
+// GET http://localhost:8080/api/queue/:queueId
+export async function apiGetQueueById(queueId) {
+    return apiRequest(`/queue/${queueId}`);
+}
+
+// PUT http://localhost:8080/api/queue/:queueId/status?status=SERVING
+export async function apiUpdateQueueStatus(queueId, status) {
+    return apiRequest(`/queue/${queueId}/status?status=${encodeURIComponent(status)}`, {
+        method: 'PUT',
+    });
+}
+
+// DELETE http://localhost:8080/api/queue/:queueId
+export async function apiCancelQueue(queueId) {
+    return apiRequest(`/queue/${queueId}`, {
+        method: 'DELETE',
+    });
+}
+
+// GET http://localhost:8080/api/queue/user/:userId
+export async function apiGetUserQueues(userId) {
+    return apiRequest(`/queue/user/${encodeURIComponent(userId)}`);
+}
+

@@ -1,8 +1,6 @@
 package com.Kasalig.Kasalig_bAI.controller;
 
-import com.Kasalig.Kasalig_bAI.dto.QueueRequest;
-import com.Kasalig.Kasalig_bAI.dto.QueueResponse;
-import com.Kasalig.Kasalig_bAI.service.QueueService;
+import com.Kasalig.Kasalig_bAI.repository.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,26 +15,37 @@ public class QueueController {
 
     private final QueueService queueService;
 
-    // Constructor injection
     public QueueController(QueueService queueService) {
         this.queueService = queueService;
     }
 
     // 1. Create / Join a queue
-    @PostMapping
+    // URLs: POST http://localhost:8080/api/queue  OR  POST http://localhost:8080/api/queue/create
+    @PostMapping({"", "/create"})
     public ResponseEntity<QueueResponse> createQueue(@Valid @RequestBody QueueRequest request) {
         QueueResponse response = queueService.createQueue(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // 2. Get all queues (with optional status filter e.g., ?status=WAITING)
-    @GetMapping
+    // 2. Get all queues (with optional status or userId filter e.g., ?status=WAITING or ?userId=xyz)
+    // URLs: GET http://localhost:8080/api/queue  OR  GET http://localhost:8080/api/queue/all
+    @GetMapping({"", "/all"})
     public ResponseEntity<List<QueueResponse>> getAllQueues(
-            @RequestParam(required = false) String status) {
-        List<QueueResponse> queues = (status != null) 
-                ? queueService.getQueuesByStatus(status) 
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String userId) {
+        if (userId != null && !userId.isBlank()) {
+            return ResponseEntity.ok(queueService.getQueuesByUserId(userId));
+        }
+        List<QueueResponse> queues = (status != null)
+                ? queueService.getQueuesByStatus(status)
                 : queueService.getAllQueues();
         return ResponseEntity.ok(queues);
+    }
+
+    // 2b. Get queues for a specific user: GET http://localhost:8080/api/queue/user/{userId}
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<QueueResponse>> getQueuesByUserId(@PathVariable String userId) {
+        return ResponseEntity.ok(queueService.getQueuesByUserId(userId));
     }
 
     // 3. Get specific queue ticket by ID

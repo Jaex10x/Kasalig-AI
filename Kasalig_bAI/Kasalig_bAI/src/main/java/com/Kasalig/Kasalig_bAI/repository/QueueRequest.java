@@ -4,6 +4,7 @@ package com.Kasalig.Kasalig_bAI.repository;
  * QueueRequest
  */
 public class QueueRequest {
+    private String user_id;
     private String full_name;
     private String email;
     private String contact_number;
@@ -15,6 +16,12 @@ public class QueueRequest {
     private String additional_details;
 
     // Getters and Setters
+    public String getUser_id() { return user_id; }
+    public void setUser_id(String user_id) { this.user_id = user_id; }
+
+    public String getUserId() { return user_id; }
+    public void setUserId(String userId) { this.user_id = userId; }
+
     public String getFull_name() { return full_name; }
     public void setFull_name(String full_name) { this.full_name = full_name; }
 
