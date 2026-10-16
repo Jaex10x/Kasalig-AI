@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Shield } from 'lucide-react';
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ArrowLeft,
+  ShieldCheck,
+  CheckCircle2,
+  Sparkles,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
 
@@ -64,30 +74,60 @@ const Login = () => {
 
   return (
     <div className="auth-page" id="login-page">
+      {/* Floating Back to Home button connecting directly to the Hero page */}
+      <Link to="/" className="auth-back-nav" id="back-to-home-link">
+        <ArrowLeft size={15} />
+        <span>Back to Portal</span>
+      </Link>
 
+      {/* Left Showcase Side */}
       <div className="auth-bg" id="auth-bg">
         <div className="auth-bg__overlay" />
         <div className="auth-bg__content">
           <div className="auth-bg__branding">
             <div className="auth-bg__logo">
-              <img src="/logo.png" alt="Kasalig AI" width={22} />
+              <img src="/logo.png" alt="Kasalig AI" width={32} />
             </div>
             <div className="auth-bg__brand-info">
               <span className="auth-bg__brand-name">
                 Kasalig AI <span className="auth-bg__badge">BETA</span>
               </span>
-              <span className="auth-bg__brand-subtitle">Government Services AI</span>
+              <span className="auth-bg__brand-subtitle">Province of Cebu · Official Services</span>
             </div>
           </div>
+
+          <div className="auth-hero-eyebrow">
+            <span className="eyebrow-dot" />
+            CITIZEN PORTAL · PROVINCE OF CEBU
+          </div>
+
           <div className="auth-bg__tagline">
-            <h2 className="auth-bg__tagline-title">
-              Your gateway to seamless<br />
-              <span className="auth-bg__highlight">business permit services</span>
-            </h2>
+            <h1 className="auth-bg__tagline-title">
+              Your Gateway to Seamless<br />
+              <span className="auth-bg__highlight">Public & Business Services</span>
+            </h1>
             <p className="auth-bg__tagline-text">
-              Apply for business permits, track your applications, and get AI-powered assistance — all in one secure platform.
+              Apply for business permits, track municipal approvals in real-time, and get AI-guided assistance across all 53 Cebu municipalities.
             </p>
           </div>
+
+          {/* Hero Trust Indicators */}
+          <div className="auth-trust-row">
+            <div className="auth-trust-badge">
+              <ShieldCheck size={15} className="trust-icon" />
+              <span>Official Cebu Guidelines</span>
+            </div>
+            <div className="auth-trust-badge">
+              <CheckCircle2 size={15} className="trust-icon" />
+              <span>53 Municipalities Covered</span>
+            </div>
+            <div className="auth-trust-badge">
+              <Sparkles size={15} className="trust-icon" />
+              <span>24/7 AI-Guided Support</span>
+            </div>
+          </div>
+
+          {/* Editorial Stats Bar */}
           <div className="auth-bg__stats">
             <div className="auth-bg__stat">
               <span className="auth-bg__stat-value">53</span>
@@ -96,32 +136,32 @@ const Login = () => {
             <div className="auth-bg__stat-divider" />
             <div className="auth-bg__stat">
               <span className="auth-bg__stat-value">24/7</span>
-              <span className="auth-bg__stat-label">AI Support</span>
+              <span className="auth-bg__stat-label">AI Assistance</span>
             </div>
             <div className="auth-bg__stat-divider" />
             <div className="auth-bg__stat">
               <span className="auth-bg__stat-value">100%</span>
-              <span className="auth-bg__stat-label">Secure</span>
+              <span className="auth-bg__stat-label">Free for Citizens</span>
             </div>
           </div>
         </div>
       </div>
 
-
+      {/* Right Form Side */}
       <div className="auth-form-side" id="auth-form-side">
         <div className="auth-form-container">
-
           <div className="auth-mobile-logo">
             <div className="auth-bg__logo">
-              <img src="/logo.png" alt="Kasalig AI" width={22} />
+              <img src="/logo.png" alt="Kasalig AI" width={28} />
             </div>
             <span className="auth-mobile-logo__text">Kasalig AI</span>
           </div>
 
           <div className="auth-form-header">
-            <h1 className="auth-form-header__title">Welcome back</h1>
+            <div className="auth-form-badge">CITIZEN LOGIN</div>
+            <h2 className="auth-form-header__title">Welcome back</h2>
             <p className="auth-form-header__subtitle">
-              Sign in to your account to continue
+              Sign in to manage and track your Cebu municipal applications
             </p>
           </div>
 
@@ -191,7 +231,7 @@ const Login = () => {
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
                 <span className="auth-checkbox-custom" />
-                Remember me
+                <span>Remember me</span>
               </label>
             </div>
 
@@ -205,20 +245,20 @@ const Login = () => {
                 <span className="auth-spinner" />
               ) : (
                 <>
-                  Sign In
-                  <ArrowRight size={18} />
+                  <span>Sign In</span>
+                  <ArrowRight size={18} className="btn-arrow" />
                 </>
               )}
             </button>
           </form>
 
           <div className="auth-privacy-notice" id="login-privacy-notice">
-            <Shield size={14} />
-            <span>Your credentials are encrypted and securely handled. We never store your password in plain text.</span>
+            <ShieldCheck size={15} />
+            <span>Credentials are strictly encrypted. Complies with Republic Act 10173 (Data Privacy Act of 2012).</span>
           </div>
 
           <div className="auth-divider">
-            <span className="auth-divider__text">or</span>
+            <span className="auth-divider__text">or continue with</span>
           </div>
 
           <div className="auth-alt-actions">
@@ -229,14 +269,14 @@ const Login = () => {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              Continue with Google
+              <span>Continue with Google</span>
             </button>
           </div>
 
           <p className="auth-switch-text">
             Don&apos;t have an account?{' '}
             <Link to="/register" className="auth-switch-link" id="switch-to-register">
-              Create account
+              Create citizen account
             </Link>
           </p>
         </div>

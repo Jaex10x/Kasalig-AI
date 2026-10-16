@@ -235,9 +235,14 @@ const Navbar = () => {
                   />
                 </div>
               ) : (
-                <Link to="/login" className="navbar__login-link" id="nav-login-btn">
-                  Sign In
-                </Link>
+                <div className="navbar__auth-links">
+                  <Link to="/login" className="navbar__login-link" id="nav-login-btn">
+                    Sign In
+                  </Link>
+                  <Link to="/register" className="navbar__register-link" id="nav-register-btn">
+                    Register
+                  </Link>
+                </div>
               )}
 
               {showUserMenu && isAuthenticated && (
@@ -333,6 +338,25 @@ const Navbar = () => {
                   <span>Chat with Kasalig AI</span>
                   <ArrowRight size={15} />
                 </Link>
+
+                {!isAuthenticated && (
+                  <div className="navbar__mobile-auth-row">
+                    <Link
+                      to="/login"
+                      className="navbar__mobile-auth-btn"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="navbar__mobile-auth-btn navbar__mobile-auth-btn--primary"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Register
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>

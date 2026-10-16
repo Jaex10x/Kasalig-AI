@@ -1,6 +1,19 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Shield, Check, X } from 'lucide-react';
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ArrowLeft,
+  User,
+  ShieldCheck,
+  CheckCircle2,
+  Check,
+  X,
+  Sparkles,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
 
@@ -28,6 +41,7 @@ const Register = () => {
       setError(err.message || 'Google sign-up failed');
     }
   };
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
@@ -69,10 +83,10 @@ const Register = () => {
         passed.length <= 1
           ? '#ef4444'
           : passed.length <= 2
-            ? '#f59e0b'
+            ? '#d97706'
             : passed.length <= 3
-              ? '#3b82f6'
-              : '#16a34a',
+              ? '#c59b27'
+              : '#15803d',
     };
   }, [formData.password]);
 
@@ -121,30 +135,61 @@ const Register = () => {
 
   return (
     <div className="auth-page" id="register-page">
+      {/* Floating Back to Home button connecting directly to the Hero page */}
+      <Link to="/" className="auth-back-nav" id="back-to-home-link">
+        <ArrowLeft size={15} />
+        <span>Back to Portal</span>
+      </Link>
 
+      {/* Left Column: NoterX Editorial Showcase mirroring Hero Section */}
       <div className="auth-bg" id="auth-bg-register">
         <div className="auth-bg__overlay" />
         <div className="auth-bg__content">
           <div className="auth-bg__branding">
             <div className="auth-bg__logo">
-              <img src="/logo.png" alt="Kasalig AI" width={40} />
+              <img src="/logo.png" alt="Kasalig AI" width={32} />
             </div>
             <div className="auth-bg__brand-info">
               <span className="auth-bg__brand-name">
-                Kasalig <span className="auth-bg__badge">BETA</span>
+                Kasalig AI <span className="auth-bg__badge">BETA</span>
               </span>
-              <span className="auth-bg__brand-subtitle">Government Services AI</span>
+              <span className="auth-bg__brand-subtitle">Province of Cebu · Official Services</span>
             </div>
           </div>
+
+          <div className="auth-hero-eyebrow">
+            <span className="eyebrow-dot" />
+            CITIZEN ONBOARDING · PROVINCE OF CEBU
+          </div>
+
           <div className="auth-bg__tagline">
-            <h2 className="auth-bg__tagline-title">
-              Start your journey with<br />
-              <span className="auth-bg__highlight">Kasalig AI today</span>
-            </h2>
+            <h1 className="auth-bg__tagline-title">
+              Government Requirements,
+              <br />
+              <span className="auth-bg__highlight">Made Simple & Swift.</span>
+            </h1>
             <p className="auth-bg__tagline-text">
-              Join Filipino citizens who trust Kasalig for hassle-free business permit applications across Cebu province.
+              Join Filipino citizens and business owners who rely on Kasalig AI for seamless business permit applications across all 53 municipalities in the Province of Cebu.
             </p>
           </div>
+
+          {/* Hero Trust Indicators */}
+          <div className="auth-trust-row">
+            <div className="auth-trust-badge">
+              <ShieldCheck size={15} className="trust-icon" />
+              <span>Official Cebu Guidelines</span>
+            </div>
+            <div className="auth-trust-badge">
+              <CheckCircle2 size={15} className="trust-icon" />
+              <span>53 Municipalities Covered</span>
+            </div>
+            <div className="auth-trust-badge">
+              <Sparkles size={15} className="trust-icon" />
+              <span>24/7 AI-Guided Support</span>
+            </div>
+          </div>
+
+          {/* Editorial Stats Bar */}
           <div className="auth-bg__stats">
             <div className="auth-bg__stat">
               <span className="auth-bg__stat-value">53</span>
@@ -153,30 +198,32 @@ const Register = () => {
             <div className="auth-bg__stat-divider" />
             <div className="auth-bg__stat">
               <span className="auth-bg__stat-value">24/7</span>
-              <span className="auth-bg__stat-label">AI Support</span>
+              <span className="auth-bg__stat-label">AI Assistance</span>
             </div>
             <div className="auth-bg__stat-divider" />
             <div className="auth-bg__stat">
               <span className="auth-bg__stat-value">100%</span>
-              <span className="auth-bg__stat-label">Secure</span>
+              <span className="auth-bg__stat-label">Free for Citizens</span>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Right Column: Citizen Registration Card */}
       <div className="auth-form-side" id="auth-form-side-register">
         <div className="auth-form-container">
           <div className="auth-mobile-logo">
             <div className="auth-bg__logo">
-              <img src="/logo.png" alt="Kasalig AI" width={40} />
+              <img src="/logo.png" alt="Kasalig AI" width={28} />
             </div>
-            <span className="auth-mobile-logo__text">Kasalig</span>
+            <span className="auth-mobile-logo__text">Kasalig AI</span>
           </div>
 
           <div className="auth-form-header">
-            <h1 className="auth-form-header__title">Create an account</h1>
+            <div className="auth-form-badge">CITIZEN PORTAL</div>
+            <h2 className="auth-form-header__title">Create your account</h2>
             <p className="auth-form-header__subtitle">
-              Get started with Kasalig — it&apos;s free and secure
+              Get started with Kasalig AI — free, private, and secured under RA 10173.
             </p>
           </div>
 
@@ -196,7 +243,7 @@ const Register = () => {
                   id="register-name"
                   name="fullName"
                   className="auth-input"
-                  placeholder="Enter your full name"
+                  placeholder="e.g. Maria Santos Dela Cruz"
                   value={formData.fullName}
                   onChange={handleChange}
                   autoComplete="name"
@@ -214,7 +261,7 @@ const Register = () => {
                   id="register-email"
                   name="email"
                   className="auth-input"
-                  placeholder="Enter your email"
+                  placeholder="e.g. maria.santos@gmail.com"
                   value={formData.email}
                   onChange={handleChange}
                   autoComplete="email"
@@ -282,6 +329,12 @@ const Register = () => {
             {/* Password Strength Indicator */}
             {formData.password.length > 0 && (
               <div className="password-strength" id="password-strength">
+                <div className="password-strength__header">
+                  <span className="auth-label" style={{ fontSize: '0.74rem' }}>Password Strength</span>
+                  <span className="password-strength__label" style={{ color: passwordStrength.color }}>
+                    {passwordStrength.label}
+                  </span>
+                </div>
                 <div className="password-strength__bar-track">
                   <div
                     className="password-strength__bar-fill"
@@ -291,9 +344,6 @@ const Register = () => {
                     }}
                   />
                 </div>
-                <span className="password-strength__label" style={{ color: passwordStrength.color }}>
-                  {passwordStrength.label}
-                </span>
                 <ul className="password-strength__rules">
                   {passwordStrength.results.map((rule) => (
                     <li
@@ -318,9 +368,11 @@ const Register = () => {
                   onChange={(e) => setAgreeTerms(e.target.checked)}
                 />
                 <span className="auth-checkbox-custom" />
-                I agree to the{' '}
-                <span className="auth-terms-link">Terms of Service</span> and{' '}
-                <span className="auth-terms-link">Privacy Policy</span>
+                <span>
+                  I agree to the{' '}
+                  <span className="auth-terms-link">Terms of Service</span> and{' '}
+                  <span className="auth-terms-link">Privacy Policy</span>
+                </span>
               </label>
             </div>
 
@@ -334,20 +386,20 @@ const Register = () => {
                 <span className="auth-spinner" />
               ) : (
                 <>
-                  Create Account
-                  <ArrowRight size={18} />
+                  <span>Create Citizen Account</span>
+                  <ArrowRight size={18} className="btn-arrow" />
                 </>
               )}
             </button>
           </form>
 
           <div className="auth-privacy-notice" id="register-privacy-notice">
-            <Shield size={14} />
-            <span>Your data is protected with end-to-end encryption. We comply with the Data Privacy Act of 2012 (RA 10173).</span>
+            <ShieldCheck size={15} />
+            <span>Compliant with the Philippine Data Privacy Act of 2012 (RA 10173). Your credentials and business records are fully encrypted.</span>
           </div>
 
           <div className="auth-divider">
-            <span className="auth-divider__text">or</span>
+            <span className="auth-divider__text">or continue with</span>
           </div>
 
           <div className="auth-alt-actions">
@@ -358,7 +410,7 @@ const Register = () => {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              Continue with Google
+              <span>Continue with Google</span>
             </button>
           </div>
 

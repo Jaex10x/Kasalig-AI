@@ -73,6 +73,13 @@ const Hero = () => {
               </Link>
             </div>
 
+            <div className="hero-citizen-prompt">
+              <span>Applying for a permit or clearance?</span>{' '}
+              <Link to="/register" className="hero-citizen-link" id="hero-register-link">
+                Register as Citizen <ArrowRight size={13} />
+              </Link>
+            </div>
+
             <div className="hero-trust-row">
               <div className="hero-trust-badge">
                 <ShieldCheck size={16} className="trust-icon" />
